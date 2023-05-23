@@ -1,5 +1,6 @@
 import requests
 import json
+from urllib.parse import quote
 
 class SearchEngine:
     def __init__(self):
@@ -39,6 +40,8 @@ class SearchEngine:
         print(self.categoriesCode)
 
     def SearchRaidTeam(self, character_name):
+        self.raidTeam_Info = []
+        character_name = quote(character_name)
         url = self.urls['raid_team'].replace('%EB%A6%B0%ED%8B%B0%EC%95%88', character_name)      # 캐릭터 이름을 url에 적용
         response = requests.get(url, headers=self.headers)                                      # url에 대한 요청 수행
 
@@ -49,7 +52,10 @@ class SearchEngine:
         else:
             print(f"Request failed with status code {response.status_code}")
 
-    def AddCharacterImages(self):
+    def RemoveCharacterWithNoImage(self):
+        self.raidTeam_Info = [character for character in self.raidTeam_Info if character['image'] is not None]
+
+    def AddCharacterImages(self):   #이미지가 NONE인놈은 원정대에서 추방
         for character in self.raidTeam_Info:
             url = self.urls['profiles'].replace('%EB%A6%B0%ED%8B%B0%EC%95%88', character['CharacterName'])  # 캐릭터 이름을 url에 적용
             response = requests.get(url, headers=self.headers)                                              # url에 대한 요청 수행
@@ -60,5 +66,9 @@ class SearchEngine:
             else:
                 print(f"Request failed with status code {response.status_code}")
 
+        self.RemoveCharacterWithNoImage()
         print(self.raidTeam_Info)
+
+
+
 
