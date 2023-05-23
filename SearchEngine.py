@@ -18,6 +18,7 @@ class SearchEngine:
             "Content-Type": "application/json" }
         self.categoriesCode = {}        #'장비 상자' : 10100 등이 저장되어 있다.
         self.raidTeam_Info = []         #캐릭터 이름, 아이템레벨, 이미지를 담고 있다.
+        self.honingMat_Info = {}
 
         response = requests.get(self.urls['market_option'], headers=self.headers)
         options = response.json()
@@ -68,6 +69,10 @@ class SearchEngine:
 
         self.RemoveCharacterWithNoImage()
         print(self.raidTeam_Info)
+
+    def SearchHoningItems(self):
+        HoningMatCategory = self.categoriesCode['재련 재료']
+        AdditionalHoningMatCategory = self.categoriesCode['재련 추가 재료']
 
 
 

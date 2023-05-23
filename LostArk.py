@@ -60,10 +60,12 @@ class LostArk:
         self.scrollbar.pack(side="right", fill="y")  # 스크롤바를 오른쪽에 팩, fill로 크기 조절
 
     def DisplayRaidTeam(self):
+        if(len(self.characterSelectRaidoButtons) > 0):
+            self.canvas.delete("all")
+
         for radio_button in self.characterSelectRaidoButtons:  # destroy the existing radio buttons
             radio_button.destroy()
         self.characterSelectRaidoButtons = []  # reset the list
-        self.canvas.delete("all")
 
         for i, character in enumerate(search_engine.raidTeam_Info):
             image_url = character['image']
