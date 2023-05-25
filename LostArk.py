@@ -20,7 +20,7 @@ class LostArk:
         self.fontstyle2 = font.Font(self.window, size=15, weight='bold', family='consolas')
         self.initPages()
         self.initPage1()
-        self.currentSelectedCharacterName = ''
+        self.currentSelectedCharacterName = StringVar()
         self.currentSelectedCharacterLV = 0
         self.characterSelectRaidoButtons = []
 
@@ -114,6 +114,7 @@ class LostArk:
     def selectCharacter(self, lv):
         self.currentSelectedCharacterLV = lv
         print('선택된 캐릭터 레벨 : ', self.currentSelectedCharacterLV)
+        print('선택된 캐릭터 이름 : ', self.currentSelectedCharacterName.get())
 
 
 LostArk()

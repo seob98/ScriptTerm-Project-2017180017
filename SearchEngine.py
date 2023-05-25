@@ -44,7 +44,7 @@ class SearchEngine:
 
         print(self.categoriesCode)
 
-        self.SearchItem('재련 재료', 3, '경이로운 명예의 돌파석')
+        self.SearchEveryHoningItem()
 
     def SearchRaidTeam(self, character_name):
         self.raidTeam_Info = []
@@ -95,8 +95,7 @@ class SearchEngine:
         self.RemoveCharacterWithNoImage()
         print(self.raidTeam_Info)
 
-
-    def SearchItem(self, category_name, item_tier, item_name):
+    def SearchHoningItem(self, category_name, item_tier, item_name):
         if category_name not in self.categoriesCode:
             print(f"{category_name} is not a valid category name")
             return
@@ -129,8 +128,47 @@ class SearchEngine:
         else:
             print(f"Request failed with status code {response.status_code}")
 
-    def SearchRequestedItems(self, requestedLv):
-        pass
+    def SearchEveryHoningItem(self):    #돌파석
+        self.SearchHoningItem('재련 재료', 3, '명예의 돌파석')
+        self.SearchHoningItem('재련 재료', 3, '위대한 명예의 돌파석')
+        self.SearchHoningItem('재련 재료', 3, '경이로운 명예의 돌파석')
+        self.SearchHoningItem('재련 재료', 3, '찬란한 명예의 돌파석')
+                                        #수호석
+        self.SearchHoningItem('재련 재료', 3, '수호석 결정')
+        self.SearchHoningItem('재련 재료', 3, '수호강석')
+        self.SearchHoningItem('재련 재료', 3, '정제된 수호강석')
+                                        #파괴석
+        self.SearchHoningItem('재련 재료', 3, '파괴석 결정')
+        self.SearchHoningItem('재련 재료', 3, '파괴강석')
+        self.SearchHoningItem('재련 재료', 3, '정제된 파괴강석')
+                                        #오레하
+        self.SearchHoningItem('재련 재료', 3, '하급 오레하 융화제')
+        self.SearchHoningItem('재련 재료', 3, '중급 오레하 융화제')
+        self.SearchHoningItem('재련 재료', 3, '상급 오레하 융화제')
+        self.SearchHoningItem('재련 재료', 3, '최상급 오레하 융화제')
+                                        #책(숨결)
+        self.SearchHoningItem('재련 추가 재료', 3, '태양의 은총')
+        self.SearchHoningItem('재련 추가 재료', 3, '태양의 축복')
+        self.SearchHoningItem('재련 추가 재료', 3, '태양의 가호')
+                                        #책(방어구)
+        self.SearchHoningItem('재련 추가 재료', 3, '재봉술 : 수선 기본')
+        self.SearchHoningItem('재련 추가 재료', 3, '재봉술 : 수선 응용')
+        self.SearchHoningItem('재련 추가 재료', 3, '재봉술 : 수선 심화')
+        self.SearchHoningItem('재련 추가 재료', 3, '재봉술 : 수선 숙련')
+        self.SearchHoningItem('재련 추가 재료', 3, '재봉술 : 수선 특화')
+                                        #책(무기)
+        self.SearchHoningItem('재련 추가 재료', 3, '재봉술 : 단조 기본')
+        self.SearchHoningItem('재련 추가 재료', 3, '재봉술 : 단조 응용')
+        self.SearchHoningItem('재련 추가 재료', 3, '재봉술 : 단조 심화')
+        self.SearchHoningItem('재련 추가 재료', 3, '재봉술 : 단조 숙련')
+        self.SearchHoningItem('재련 추가 재료', 3, '재봉술 : 단조 특화')
+
+    def GetCharacter(self, character_name):
+        for character in self.raidTeam_Info:
+            if character.CharacterName == character_name:
+                return character
+        return None
+
 
 
 

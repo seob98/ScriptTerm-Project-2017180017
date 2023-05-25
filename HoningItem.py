@@ -6,4 +6,7 @@ class HoningItem:
         self.RecentPrice = recentPrice              #최근 거래가
         self.CurrentMinPrice = currentMinPrice      #현재 최저가
 
+    def GetMatAndCounts(self):
+        pass
+
 
