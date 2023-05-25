@@ -1,6 +1,8 @@
 import requests
 import json
 from urllib.parse import quote
+from Item import *
+from Character import *
 
 class SearchEngine:
     def __init__(self):
@@ -9,7 +11,7 @@ class SearchEngine:
             'market_option': 'https://developer-lostark.game.onstove.com/markets/options',
             'raid_team': 'https://developer-lostark.game.onstove.com/characters/%EB%A6%B0%ED%8B%B0%EC%95%88/siblings',
             'character' : 'https://developer-lostark.game.onstove.com/armories/characters/%EB%A6%B0%ED%8B%B0%EC%95%88',
-            'market': 'https://developer-lostark.game.onstove.com/markets/search',
+            'market': 'https://developer-lostark.game.onstove.com/markets/items',
             'profiles' : 'https://developer-lostark.game.onstove.com/armories/characters/%EB%A6%B0%ED%8B%B0%EC%95%88/profiles'
         }
         self.headers = {
@@ -39,6 +41,8 @@ class SearchEngine:
                     self.categoriesCode[sub['CodeName']] = sub['Code']
 
         print(self.categoriesCode)
+
+        self.SearchItem('재련 재료', 3, '경이로운 명예의 돌파석')
 
     def SearchRaidTeam(self, character_name):
         self.raidTeam_Info = []
@@ -70,9 +74,43 @@ class SearchEngine:
         self.RemoveCharacterWithNoImage()
         print(self.raidTeam_Info)
 
-    def SearchHoningItems(self):
-        HoningMatCategory = self.categoriesCode['재련 재료']
-        AdditionalHoningMatCategory = self.categoriesCode['재련 추가 재료']
+    def SearchItem(self, category_name, item_tier, item_name):
+        if category_name not in self.categoriesCode:
+            print(f"{category_name} is not a valid category name")
+            return
+
+        category_code = self.categoriesCode[category_name]
+        data = {
+            "Sort": "GRADE",
+            "CategoryCode": category_code,
+            "CharacterClass": None,
+            "ItemTier": item_tier,
+            "ItemGrade": None,
+            "ItemName": item_name,
+            "PageNo": 0,
+            "SortCondition": "ASC"
+        }
+
+        response = requests.post(self.urls['market'], headers=self.headers, data=json.dumps(data))
+
+        if response.status_code == 200:
+            items = response.json()['Items']
+            for i in items:
+                name = i['Name']
+                icon = i['Icon']
+                yDayAvgPrice = i['YDayAvgPrice']
+                recentPrice = i['RecentPrice']
+                currentMinPrice = i['CurrentMinPrice']
+                item_obj = Item(name, icon, yDayAvgPrice, recentPrice, currentMinPrice)
+                self.honingMat_Info[name] = item_obj
+                print(f"Added item: {item_obj.Name}, Icon: {item_obj.Icon}, Yesterday Average Price: {item_obj.YDayAvgPrice}, Recent Price: {item_obj.RecentPrice}, Current Min Price: {item_obj.CurrentMinPrice}")
+        else:
+            print(f"Request failed with status code {response.status_code}")
+
+    def SearchRequestedItems(self, requestedLv):
+        pass
+
+
 
 
 

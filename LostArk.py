@@ -19,7 +19,8 @@ class LostArk:
         self.fontstyle2 = font.Font(self.window, size=15, weight='bold', family='consolas')
         self.initPages()
         self.initPage1()
-        self.currentSelectedCharacterLv = 0
+        self.currentSelectedCharacterName = ''
+        self.currentSelectedCharacterLV = 0
         self.characterSelectRaidoButtons = []
 
 
@@ -60,6 +61,7 @@ class LostArk:
         self.scrollbar.pack(side="right", fill="y")  # 스크롤바를 오른쪽에 팩, fill로 크기 조절
 
     def DisplayRaidTeam(self):
+        self.scrollable_frame.configure(height=0)
         if(len(self.characterSelectRaidoButtons) > 0):
             self.canvas.delete("all")
 
@@ -85,7 +87,7 @@ class LostArk:
                 self.canvas.create_window(x_position, y_position, window=img_label, anchor='nw')
 
                 radio_button = Radiobutton(self.canvas, text=character['CharacterName'],
-                                           variable=self.currentSelectedCharacterLv, value=character['ItemMaxLevel'],
+                                           variable=self.currentSelectedCharacterName, value=character['CharacterName'],
                                            command=lambda lv=character['ItemMaxLevel']: self.selectCharacter(lv))
                 radio_button.place(x=680, y=start_y_position + i * 20 + 10)
                 self.characterSelectRaidoButtons.append(radio_button)
@@ -94,6 +96,9 @@ class LostArk:
                     self.scrollable_frame.update_idletasks()  # Force the frame to update
                     new_height = self.scrollable_frame.winfo_height() + img_label.winfo_height() + radio_button.winfo_height()
                     self.scrollable_frame.configure(height=new_height)  # Update the frame's height
+
+                self.canvas.update_idletasks()                              # Force the canvas to update
+                self.canvas.configure(scrollregion=self.canvas.bbox("all"))  # Update the scrollable region
 
     def initPage1(self):
         self.initPage1Canvas()
@@ -106,8 +111,8 @@ class LostArk:
         self.DisplayRaidTeam()
 
     def selectCharacter(self, lv):
-        self.currentSelectedCharacterLv = lv
-        print('현재 레벨 : ', self.currentSelectedCharacterLv)
+        self.currentSelectedCharacterLV = lv
+        print('선택된 캐릭터 레벨 : ', self.currentSelectedCharacterLV)
 
 
 LostArk()
