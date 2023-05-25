@@ -1,4 +1,4 @@
-class Item:
+class HoningItem:
     def __init__(self, name, icon, yDayAvgPrice, recentPrice, currentMinPrice):
         self.Name = name
         self.Icon = icon

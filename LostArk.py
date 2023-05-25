@@ -6,6 +6,7 @@ from PIL import ImageTk
 from io import BytesIO
 
 from SearchEngine import *
+from Character import *
 
 search_engine = SearchEngine()
 
@@ -65,13 +66,13 @@ class LostArk:
         if(len(self.characterSelectRaidoButtons) > 0):
             self.canvas.delete("all")
 
-        for radio_button in self.characterSelectRaidoButtons:  # destroy the existing radio buttons
+        for radio_button in self.characterSelectRaidoButtons:   # destroy the existing radio buttons
             radio_button.destroy()
-        self.characterSelectRaidoButtons = []  # reset the list
+        self.characterSelectRaidoButtons = []                   # reset the list
 
         for i, character in enumerate(search_engine.raidTeam_Info):
-            image_url = character['image']
-            if image_url is not None:  # Add check for None image_url
+            image_url = character.Image
+            if image_url is not None:
                 response = requests.get(image_url)
                 img_data = response.content
                 img = Image.open(BytesIO(img_data))
@@ -86,9 +87,9 @@ class LostArk:
                 y_position = start_y_position + (i // 3) * 270
                 self.canvas.create_window(x_position, y_position, window=img_label, anchor='nw')
 
-                radio_button = Radiobutton(self.canvas, text=character['CharacterName'],
-                                           variable=self.currentSelectedCharacterName, value=character['CharacterName'],
-                                           command=lambda lv=character['ItemMaxLevel']: self.selectCharacter(lv))
+                radio_button = Radiobutton(self.canvas, text=character.CharacterName,
+                                           variable=self.currentSelectedCharacterName, value=character.CharacterName,
+                                           command=lambda lv=character.ItemMaxLevel: self.selectCharacter(lv))
                 radio_button.place(x=680, y=start_y_position + i * 20 + 10)
                 self.characterSelectRaidoButtons.append(radio_button)
 
@@ -107,7 +108,7 @@ class LostArk:
     def search_raidTeam(self):
         characterName = self.entry.get()
         search_engine.SearchRaidTeam(characterName)
-        search_engine.AddCharacterImages()
+        search_engine.AddCharacterImage()
         self.DisplayRaidTeam()
 
     def selectCharacter(self, lv):

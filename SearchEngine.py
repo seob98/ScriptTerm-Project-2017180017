@@ -1,8 +1,9 @@
 import requests
 import json
 from urllib.parse import quote
-from Item import *
+from HoningItem import *
 from Character import *
+import re
 
 class SearchEngine:
     def __init__(self):
@@ -11,6 +12,7 @@ class SearchEngine:
             'market_option': 'https://developer-lostark.game.onstove.com/markets/options',
             'raid_team': 'https://developer-lostark.game.onstove.com/characters/%EB%A6%B0%ED%8B%B0%EC%95%88/siblings',
             'character' : 'https://developer-lostark.game.onstove.com/armories/characters/%EB%A6%B0%ED%8B%B0%EC%95%88',
+            'character_equipment': 'https://developer-lostark.game.onstove.com/armories/characters/%EB%A6%B0%ED%8B%B0%EC%95%88',
             'market': 'https://developer-lostark.game.onstove.com/markets/items',
             'profiles' : 'https://developer-lostark.game.onstove.com/armories/characters/%EB%A6%B0%ED%8B%B0%EC%95%88/profiles'
         }
@@ -47,32 +49,52 @@ class SearchEngine:
     def SearchRaidTeam(self, character_name):
         self.raidTeam_Info = []
         character_name = quote(character_name)
-        url = self.urls['raid_team'].replace('%EB%A6%B0%ED%8B%B0%EC%95%88', character_name)      # 캐릭터 이름을 url에 적용
+        url = self.urls['raid_team'].replace('%EB%A6%B0%ED%8B%B0%EC%95%88', character_name)     # 캐릭터 이름을 url에 적용
         response = requests.get(url, headers=self.headers)                                      # url에 대한 요청 수행
 
         if response.status_code == 200:
             data = response.json()
-            self.raidTeam_Info = [{'CharacterName': character['CharacterName'], 'ItemMaxLevel': character['ItemMaxLevel']}
-                                  for character in data]        # 캐릭터 이름과 아이템 최대 레벨만 저장하는 리스트 생성
+            self.raidTeam_Info = [Character(character['CharacterName'], character['ItemMaxLevel']) for character in data]        # 캐릭터 이름과 아이템 최대 레벨만 저장하는 리스트 생성
         else:
             print(f"Request failed with status code {response.status_code}")
 
     def RemoveCharacterWithNoImage(self):
-        self.raidTeam_Info = [character for character in self.raidTeam_Info if character['image'] is not None]
+        self.raidTeam_Info = [character for character in self.raidTeam_Info if character.Image is not None]
 
-    def AddCharacterImages(self):   #이미지가 NONE인놈은 원정대에서 추방
+    def AddCharacterImage(self):  # 이미지가 NONE인놈은 원정대에서 추방
         for character in self.raidTeam_Info:
-            url = self.urls['profiles'].replace('%EB%A6%B0%ED%8B%B0%EC%95%88', character['CharacterName'])  # 캐릭터 이름을 url에 적용
-            response = requests.get(url, headers=self.headers)                                              # url에 대한 요청 수행
+            url = self.urls['character_equipment'].replace('%EB%A6%B0%ED%8B%B0%EC%95%88',
+                                                           character.CharacterName)  # 캐릭터 이름을 url에 적용
+            response = requests.get(url, headers=self.headers)  # url에 대한 요청 수행
 
             if response.status_code == 200:
                 data = response.json()
-                character['image'] = data['CharacterImage']        # 이미지 URL을 characterInfo에 추가
+                character.SetImage(data['ArmoryProfile']['CharacterImage'])         #캐릭터 이미지 기록 완료
+                if data['ArmoryProfile']['CharacterImage'] == None:
+                    continue
+
+                for i, equipment in enumerate(data['ArmoryEquipment']):
+                    validTypes = ['무기', '투구', '상의', '하의', '장갑', '어깨']
+                    itemName = equipment['Name']                    # itemName Here
+                    itemType = equipment['Type']                    # itemType Here
+                    if itemType not in validTypes:
+                        continue
+                    tooltip = equipment['Tooltip']
+                    tooltip_data_str = tooltip.replace('\r\n', '').replace('\\', '')
+                    tooltip_data = json.loads(tooltip_data_str)  # parse
+                    item_level_str = tooltip_data['Element_001']['value']['leftStr2']
+                    itemLv = int(item_level_str.split(' ')[3])          # itemLv Here
+                    match = re.search(r'\+(\d+)', itemName)
+                    if match:
+                         enhanceLv = int(match.group(1))                # enhanceLv Here
+                    else:
+                        enhanceLv = 0  # 강화레벨 0을 위한 예외처리
+                    character.SetEquipment(itemType, itemName, enhanceLv, itemLv)
             else:
                 print(f"Request failed with status code {response.status_code}")
-
         self.RemoveCharacterWithNoImage()
         print(self.raidTeam_Info)
+
 
     def SearchItem(self, category_name, item_tier, item_name):
         if category_name not in self.categoriesCode:
@@ -101,7 +123,7 @@ class SearchEngine:
                 yDayAvgPrice = i['YDayAvgPrice']
                 recentPrice = i['RecentPrice']
                 currentMinPrice = i['CurrentMinPrice']
-                item_obj = Item(name, icon, yDayAvgPrice, recentPrice, currentMinPrice)
+                item_obj = HoningItem(name, icon, yDayAvgPrice, recentPrice, currentMinPrice)
                 self.honingMat_Info[name] = item_obj
                 print(f"Added item: {item_obj.Name}, Icon: {item_obj.Icon}, Yesterday Average Price: {item_obj.YDayAvgPrice}, Recent Price: {item_obj.RecentPrice}, Current Min Price: {item_obj.CurrentMinPrice}")
         else:

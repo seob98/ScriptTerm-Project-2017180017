@@ -1,31 +1,31 @@
+from Equipment import *
+
 class Character:
     def __init__(self, characterName, itemMaxLevel):
         self.CharacterName = characterName
         self.ItemMaxLevel = itemMaxLevel
-        self.CharacterImage = ''
-        self.EquipLv = { '투구': [0, 0], '상의': [0, 0], '하의': [0, 0], '장갑': [0, 0], '어깨': [0, 0], '무기': [0, 0]}
+        self.Image = None
+        self.Equipments = { '투구': Equipment('', True, 0,0), '상의': Equipment('', False, 0,0), '하의': Equipment('', False, 0,0),
+                            '장갑': Equipment('', False, 0,0), '어깨': Equipment('', False, 0,0), '무기': Equipment('', False, 0,0)}
 
-    def SetImageAndEquipLv(self, characterImage, helmetEnhanceLv, topEnhanceLv, bottomEnhanceLv, glovesEnhanceLv, shouldersEnhanceLv, weaponEnhanceLv,
-                           helmetItemLv, topItemLv, bottomItemLv, glovesItemLv, shouldersItemLv, weaponItemLv):
-        self.CharacterImage = characterImage
-        self.EquipLv = {
-            '투구': {'강화 레벨': helmetEnhanceLv, '아이템 레벨': helmetItemLv },
-            '상의': {'강화 레벨': topEnhanceLv, '아이템 레벨': topItemLv},
-            '하의': {'강화 레벨': bottomEnhanceLv, '아이템 레벨': bottomItemLv},
-            '장갑': {'강화 레벨': glovesEnhanceLv, '아이템 레벨': glovesItemLv},
-            '어깨': {'강화 레벨': shouldersEnhanceLv, '아이템 레벨': shouldersItemLv},
-            '무기': {'강화 레벨': weaponEnhanceLv, '아이템 레벨': weaponItemLv}
-        }
+    def SetImage(self, image):
+        self.Image = image
+
+    def SetEquipment(self, itemType, itemName, EnhanceLv, itemLv):
+        equipment = self.Equipments[itemType]
+        equipment.Name = itemName
+        equipment.EnhanceLv = EnhanceLv
+        equipment.ItemLv = itemLv
 
     def GetItemLv(self, partsName):
-        if partsName in self.EquipLv:
-            return self.EquipLv[partsName]['아이템 레벨']
+        if partsName in self.Equipments:
+            return self.Equipments[partsName].ItemLv
         else:
             return None
 
     def GetEnhanceLv(self, partsName):
-        if partsName in self.EquipLv:
-            return self.EquipLv[partsName]['강화 레벨']
+        if partsName in self.Equipments:
+            return self.Equipments[partsName].EnhanceLv
         else:
             return None
 
