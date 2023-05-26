@@ -90,7 +90,11 @@ class SearchEngine:
                          enhanceLv = int(match.group(1))                # enhanceLv Here
                     else:
                         enhanceLv = 0  # 강화레벨 0을 위한 예외처리
-                    character.SetEquipment(itemType, itemName, enhanceLv, itemLv, imageURL)
+
+                    if equipment['Grade'] == '에스더':
+                        character.SetEquipment(itemType, itemName, enhanceLv, itemLv, imageURL, True)
+                    else:
+                        character.SetEquipment(itemType, itemName, enhanceLv, itemLv, imageURL, False)
             else:
                 print(f"Request failed with status code {response.status_code}")
         self.RemoveCharacterWithNoImage()
@@ -143,10 +147,14 @@ class SearchEngine:
         self.SearchHoningItem('재련 재료', 3, '파괴강석')
         self.SearchHoningItem('재련 재료', 3, '정제된 파괴강석')
                                         #오레하
-        self.SearchHoningItem('재련 재료', 3, '하급 오레하 융화제')
-        self.SearchHoningItem('재련 재료', 3, '중급 오레하 융화제')
-        self.SearchHoningItem('재련 재료', 3, '상급 오레하 융화제')
-        self.SearchHoningItem('재련 재료', 3, '최상급 오레하 융화제')
+        self.SearchHoningItem('재련 재료', 3, '하급 오레하 융화 재료')
+        self.SearchHoningItem('재련 재료', 3, '중급 오레하 융화 재료')
+        self.SearchHoningItem('재련 재료', 3, '상급 오레하 융화 재료')
+        self.SearchHoningItem('재련 재료', 3, '최상급 오레하 융화 재료')
+                                        #명파
+        self.SearchHoningItem('재련 재료', 3, '명예의 파편 주머니(소)')
+        self.SearchHoningItem('재련 재료', 3, '명예의 파편 주머니(중)')
+        self.SearchHoningItem('재련 재료', 3, '명예의 파편 주머니(대)')
                                         #책(숨결)
         self.SearchHoningItem('재련 추가 재료', 3, '태양의 은총')
         self.SearchHoningItem('재련 추가 재료', 3, '태양의 축복')
@@ -164,11 +172,47 @@ class SearchEngine:
         self.SearchHoningItem('재련 추가 재료', 3, '재봉술 : 단조 숙련')
         self.SearchHoningItem('재련 추가 재료', 3, '재봉술 : 단조 특화')
 
+        self.Create_BestHonorShards()
+
     def GetCharacter(self, character_name):
         for character in self.raidTeam_Info:
             if character.CharacterName == character_name:
                 return character
         return None
+
+    def Create_BestHonorShards(self):
+        s = self.honingMat_Info['명예의 파편 주머니(소)']
+        m = self.honingMat_Info['명예의 파편 주머니(중)']
+        l = self.honingMat_Info['명예의 파편 주머니(대)']
+
+        smallVal = s.CurrentMinPrice / 500
+        middleVal = m.CurrentMinPrice / 1000
+        largeVal = m.CurrentMinPrice / 1500
+
+        bestVal = min(smallVal, middleVal, largeVal)
+
+        best = None
+        if bestVal == smallVal:
+            best = s
+        elif bestVal == middleVal:
+            best = m
+        elif bestVal == largeVal:
+            best = l
+
+        name = '명예의 파편'
+        icon = best.Icon
+        yDayAvgPrice = best.YDayAvgPrice
+        recentPrice = best.RecentPrice
+        currentMinPrice = best.CurrentMinPrice
+        item_obj = HoningMat(name, icon, yDayAvgPrice, recentPrice, currentMinPrice)
+        self.honingMat_Info[name] = item_obj
+
+
+
+
+
+
+
 
 
 

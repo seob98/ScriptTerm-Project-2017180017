@@ -11,10 +11,10 @@ class Character:
     def SetImage(self, image):
         self.Image = image
 
-    def SetEquipment(self, itemType, itemName, enhanceLv, itemLv, imageURL):
+    def SetEquipment(self, itemType, itemName, enhanceLv, itemLv, imageURL, isEsther):
         if itemType == '무기':
             self.Equipments[itemType] = Equipment(itemName, True, enhanceLv, itemLv , imageURL)
-        else:
+        elif itemType in ['투구', '상의', '하의', '장갑', '어깨']:
             self.Equipments[itemType] = Equipment(itemName, False, enhanceLv, itemLv, imageURL)
 
         #name, isWeapon, enhanceLv, itemLv

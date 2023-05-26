@@ -4,6 +4,8 @@ import tkinter.ttk
 from PIL import Image
 from PIL import ImageTk
 from io import BytesIO
+from Equipment import *
+from HoningMat import *
 
 from SearchEngine import *
 from Character import *
@@ -26,6 +28,14 @@ class LostArk:
         self.characterSelectRaidoButtons = []
         self.characterNameLabel = None          #page2
         self.characterLvLabel = None            #page2
+        self.equipment_listbox = None           #page2
+        self.equipment_image = {}               #page2
+        self.equipment_imageLabel = None        #page2
+
+        self.HoningMat_Labels = {}
+        #self.blankImg = {}                     #page2
+        #self.blankImgLabel = None              #page2
+        self.GoldImgLabel = None
 
         self.initPage2()
 
@@ -95,7 +105,7 @@ class LostArk:
 
                 radio_button = Radiobutton(self.canvas, text=character.CharacterName,
                                            variable=self.currentSelectedCharacterName, value=character.CharacterName,
-                                           command=lambda lv=character.ItemMaxLevel: self.selectCharacter(lv))
+                                           command=lambda lv=character.ItemMaxLevel: self.selectCharacter_RadioButton(lv))
                 radio_button.place(x=680, y=start_y_position + i * 20 + 10)
                 self.characterSelectRaidoButtons.append(radio_button)
 
@@ -116,8 +126,9 @@ class LostArk:
         search_engine.SearchRaidTeam(characterName)
         search_engine.AddCharacterImage()
         self.DisplayRaidTeam()
+        self.Page2_Equipments_Image_Ready()
 
-    def selectCharacter(self, lv):
+    def selectCharacter_RadioButton(self, lv):
         self.currentSelectedCharacterLV = lv
         if self.characterNameLabel is not None and self.characterLvLabel is not None:
             self.characterNameLabel.config(
@@ -130,19 +141,92 @@ class LostArk:
     #page2
 
     def initPage2(self):
-        self.characterNameLabel = Label(self.page2, text = '캐릭터 이름 : ' + self.currentSelectedCharacterName.get())
+        self.ItemLabel_Ready()
+
+        self.characterNameLabel = Label(self.page2, text = '캐릭터 이름 : ' + self.currentSelectedCharacterName.get())       #라벨 : 캐릭터이름 (좌측상단)
         self.characterNameLabel.place(x=0, y=0)
 
-        self.characterLvLabel = Label(self.page2, text='캐릭터 레벨: ' + str(self.currentSelectedCharacterLV))
+        self.characterLvLabel = Label(self.page2, text='캐릭터 레벨: ' + str(self.currentSelectedCharacterLV))               #라벨 : 캐릭터레벨 (좌측상단)
         self.characterLvLabel.place(x=0, y=20)
 
         self.equipmentType_listbox = StringVar()
-        self.equipmentType_listbox.set('무기')  # set default value
+        self.equipmentType_listbox.set('무기')  # set default value                                                         #리스트박스 : 장비 파츠 (좌측상단)
 
         equipmentTypes = ['무기', '투구', '상의', '하의', '장갑', '어깨']
-        equipment_listbox = Listbox(self.page2, height=len(equipmentTypes), width=10,
+        self.equipment_listbox = Listbox(self.page2, height=len(equipmentTypes), width=10,
                                     listvariable=StringVar(value=equipmentTypes),
                                     bd=2, relief='sunken')
-        equipment_listbox.place(x=0, y=40)  # Place the listbox right below the label
+        self.equipment_listbox.place(x=0, y=40)  # Place the listbox right below the label
+        self.equipment_listbox.bind('<<ListboxSelect>>', self.select_EquipmentType_Listbox)
+
+        #self.blankImg = PhotoImage(file='Image/Blank.png')
+        #self.blankImgLabel = Label(self.page2, image=self.blankImg)
+        #self.blankImgLabel.place(x=180,y=100)
+
+        self.selectedItem_NameLabel = Label(self.page2, text = '')                  #라벨 : 아이템이름 (좌측)
+        self.selectedItem_NameLabel.place(x=240, y=65)
+
+        self.selectedItem_LvLabel = Label(self.page2, text='')                      #라벨 : 아이템레벨 (좌측)
+        self.selectedItem_LvLabel.place(x=240, y=85)
+
+    def Page2_Equipments_Image_Ready(self):
+        for character in search_engine.raidTeam_Info:  # 이미지 : 장비파츠(좌측중간상단부)
+            equipments = character.Equipments
+            for gear_name, gear in equipments.items():
+                if gear.ImageURL is not None:
+                    response = requests.get(gear.ImageURL)
+                    img_data = response.content
+                    img = Image.open(BytesIO(img_data))
+                    img = img.resize((64, 64))
+                    img = ImageTk.PhotoImage(img)
+                    self.equipment_image[(character.CharacterName,gear_name)] = img
+                    self.equipment_imageLabel = Label(self.page2)
+                    self.equipment_imageLabel.place(x=170,y=60)
+
+    def select_EquipmentType_Listbox(self, event):
+        if self.currentSelectedCharacterName.get() in ['선택안됨', '', None] :
+            return
+        index = self.equipment_listbox.curselection()[0]
+        seltext = self.equipment_listbox.get(index)
+        selectedCharacter = search_engine.GetCharacter(self.currentSelectedCharacterName.get())
+        gear = selectedCharacter.Equipments[seltext]
+        self.equipment_imageLabel.config(image=self.equipment_image[self.currentSelectedCharacterName.get(), seltext])
+
+        self.selectedItem_NameLabel.config(text=gear.Name)
+        self.selectedItem_LvLabel.config(text='장비 레벨 : ' + str(gear.ItemLv))
+
+        mats, mats_bonus = gear.GetRequiredMat()
+
+        for key, basicMat in mats.items():
+            if '골드' in key:
+                continue
+            elif '돌파석' in key:
+                self.HoningMat_Labels[key].place(x=250,y=150)
+            elif '수호' in key:
+                self.HoningMat_Labels[key].place(x=250, y=200)
+            elif '파괴' in key:
+                self.HoningMat_Labels[key].place(x=250, y=200)
+            elif '오레하' in key:
+                self.HoningMat_Labels[key].place(x=250,y=250)
+            elif '파편' in key:
+                self.HoningMat_Labels[key].place(x=250,y=300)
+
+        self.GoldImgLabel.place(x= 200,y =180)
+
+    def ItemLabel_Ready(self):
+        p = PhotoImage(file='Image/Gold3.png')
+        self.GoldImgLabel = Label(self.page2, image=p)
+        self.images = []  # 가비지 셀렉션에 이미지가 포함되는 문제를 방지해야한다.
+        for name, item in search_engine.honingMat_Info.items():
+            test = item.Icon
+            response = requests.get(item.Icon)
+            img_data = response.content
+            img = Image.open(BytesIO(img_data))
+            img = img.resize((32, 32))
+            photo = ImageTk.PhotoImage(img)
+            self.images.append(photo)
+            gear_label = Label(self.page2, image=photo)
+            self.HoningMat_Labels[item.Name] = gear_label
+
 
 LostArk()
