@@ -1,7 +1,7 @@
 import requests
 import json
 from urllib.parse import quote
-from HoningItem import *
+from HoningMat import *
 from Character import *
 import re
 
@@ -77,6 +77,7 @@ class SearchEngine:
                     validTypes = ['무기', '투구', '상의', '하의', '장갑', '어깨']
                     itemName = equipment['Name']                    # itemName Here
                     itemType = equipment['Type']                    # itemType Here
+                    imageURL = equipment['Icon']
                     if itemType not in validTypes:
                         continue
                     tooltip = equipment['Tooltip']
@@ -89,7 +90,7 @@ class SearchEngine:
                          enhanceLv = int(match.group(1))                # enhanceLv Here
                     else:
                         enhanceLv = 0  # 강화레벨 0을 위한 예외처리
-                    character.SetEquipment(itemType, itemName, enhanceLv, itemLv)
+                    character.SetEquipment(itemType, itemName, enhanceLv, itemLv, imageURL)
             else:
                 print(f"Request failed with status code {response.status_code}")
         self.RemoveCharacterWithNoImage()
@@ -122,7 +123,7 @@ class SearchEngine:
                 yDayAvgPrice = i['YDayAvgPrice']
                 recentPrice = i['RecentPrice']
                 currentMinPrice = i['CurrentMinPrice']
-                item_obj = HoningItem(name, icon, yDayAvgPrice, recentPrice, currentMinPrice)
+                item_obj = HoningMat(name, icon, yDayAvgPrice, recentPrice, currentMinPrice)
                 self.honingMat_Info[name] = item_obj
                 print(f"Added item: {item_obj.Name}, Icon: {item_obj.Icon}, Yesterday Average Price: {item_obj.YDayAvgPrice}, Recent Price: {item_obj.RecentPrice}, Current Min Price: {item_obj.CurrentMinPrice}")
         else:

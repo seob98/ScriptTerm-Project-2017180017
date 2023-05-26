@@ -21,11 +21,17 @@ class LostArk:
         self.initPages()
         self.initPage1()
         self.currentSelectedCharacterName = StringVar()
+        self.currentSelectedCharacterName.set('선택안됨')
         self.currentSelectedCharacterLV = 0
         self.characterSelectRaidoButtons = []
+        self.characterNameLabel = None          #page2
+        self.characterLvLabel = None            #page2
 
+        self.initPage2()
 
         self.window.mainloop()
+
+    #page1
 
     def initPages(self):
         self.notebook = tkinter.ttk.Notebook(self.window, width=830, height=600)
@@ -113,8 +119,30 @@ class LostArk:
 
     def selectCharacter(self, lv):
         self.currentSelectedCharacterLV = lv
-        print('선택된 캐릭터 레벨 : ', self.currentSelectedCharacterLV)
-        print('선택된 캐릭터 이름 : ', self.currentSelectedCharacterName.get())
+        if self.characterNameLabel is not None and self.characterLvLabel is not None:
+            self.characterNameLabel.config(
+                text='캐릭터 이름: ' + self.currentSelectedCharacterName.get())  # Update name label text
+            self.characterLvLabel.config(
+                text='캐릭터 레벨: ' + str(self.currentSelectedCharacterLV))  # Update level label text
+        print('선택된 캐릭터 레벨: ', self.currentSelectedCharacterLV)
+        print('선택된 캐릭터 이름: ', self.currentSelectedCharacterName.get())
 
+    #page2
+
+    def initPage2(self):
+        self.characterNameLabel = Label(self.page2, text = '캐릭터 이름 : ' + self.currentSelectedCharacterName.get())
+        self.characterNameLabel.place(x=0, y=0)
+
+        self.characterLvLabel = Label(self.page2, text='캐릭터 레벨: ' + str(self.currentSelectedCharacterLV))
+        self.characterLvLabel.place(x=0, y=20)
+
+        self.equipmentType_listbox = StringVar()
+        self.equipmentType_listbox.set('무기')  # set default value
+
+        equipmentTypes = ['무기', '투구', '상의', '하의', '장갑', '어깨']
+        equipment_listbox = Listbox(self.page2, height=len(equipmentTypes), width=10,
+                                    listvariable=StringVar(value=equipmentTypes),
+                                    bd=2, relief='sunken')
+        equipment_listbox.place(x=0, y=40)  # Place the listbox right below the label
 
 LostArk()
