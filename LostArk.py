@@ -1,11 +1,13 @@
 from tkinter import *
-from tkinter import font, PhotoImage
+from tkinter import font, PhotoImage, Toplevel, Label, Tk
 import tkinter.ttk
-from PIL import Image
-from PIL import ImageTk
+from PIL import Image,ImageTk
 from io import BytesIO
+
+
 from Equipment import *
 from HoningMat import *
+
 
 from SearchEngine import *
 from Character import *
@@ -53,15 +55,17 @@ class LostArk:
         self.BonusMat_TextLabel_Book = None                #page2
         self.BonusMat_TextLabel_Gold = None                #page2
 
-        self.HoningShard_TextLabel_Guide1 = None
-        self.HoningShard_TextLabel_Guide2 = None
-        self.TextLabel_Guide = None
+        self.HoningShard_TextLabel_Guide1 = None        #page2
+        self.HoningShard_TextLabel_Guide2 = None        #page2
+        self.TextLabel_Guide = None                     #page2
 
         self.HoningMat_Images = {}              #page2
         self.HoningMat_Labels = {}              #page2
 
         self.GoldImgLabel = None                #page2
         self.GoldImg = None                     #page2
+
+        self.HoningMat_Buttons = {}             #page2
 
         self.initPage2()
 
@@ -223,7 +227,8 @@ class LostArk:
 
         self.Esther_Image_Label = Label(self.page2, image=self.HoningMat_Images['에스더의 기운'])
 
-
+        #test
+        self.Page2_Place_Button(search_engine.honingMat_Info['에스더의 기운'], 100, 100)
 
     def Page2_Equipments_Image_Ready(self):
         equipment_image = {}
@@ -240,7 +245,7 @@ class LostArk:
                     self.equipment_imageLabel = Label(self.page2)
                     self.equipment_imageLabel.place(x=170 + self.adjustX,y=60)
 
-    def select_EquipmentType_Listbox(self, event):
+    def Page2_Clear(self):
         for matName, matLabel in self.HoningMat_Labels.items():
             matLabel.config(image='')                   # 재료이미지
 
@@ -264,15 +269,92 @@ class LostArk:
         self.BonusMat_TextLabel_Solar3.config(text='')
         self.BonusMat_TextLabel_Book.config(text='')
         self.BonusMat_TextLabel_TotalPrice.config(text='')
-        self.Esther_Image_Label.config(image='')                          #초기화
+        self.Esther_Image_Label.config(image='')
 
-
-        for matName, matImageLabel in self.HoningMat_Labels.items():
+        for matName, matImageLabel in self.HoningMat_Labels.items():        #재료 이미지라벨 연결 해제
             matImageLabel.config(image='')
+
+        self.Page2_Button_Clear()                                           #재료 상세보기 버튼 삭제
+
+    def Page2_Listener_ShowItemStatus(self, honing_material):
+        new_window = Toplevel(self.window)
+        new_window.title('거래소 시세 확인')
+        new_window.geometry('600x400')           # 새로운 윈도우창 초기화
+
+        response = requests.get(honing_material.Icon)
+        img_data = response.content
+        img = Image.open(BytesIO(img_data))
+        img = img.resize((64, 64))
+        photo = ImageTk.PhotoImage(img)
+        newImgLabel = Label(new_window, image=photo)
+        newImgLabel.image = photo
+        newImgLabel.pack()                      #재료 이미지 윈도우 상단에 출력
+
+        name_label = Label(new_window, text=honing_material.Name)
+        name_label.pack()                       #재료 이름 이미지 하단에 출력
+
+
+        images_sizes = [(30, 200), (30, 250), (30, 150)]
+        image_path = 'Image/Graph.png'
+        image_type = ['CurrentMinPrice','RecentPrice','YDayAvgPrice']
+        image_tks = {}
+        image_Labels = {}
+
+        graph_position_x = [130, 280, 430]  # 하단 왼쪽, 중심, 오른쪽 좌표
+
+        window_height = 400  # 윈도우의 높이
+
+        for size, label_name, position in zip(images_sizes, image_type, graph_position_x):
+            img = Image.open(image_path)
+            img = img.resize(size)
+            img_tk = ImageTk.PhotoImage(img)
+
+            y_position = window_height - size[1]  # 이미지의 높이를 창의 높이에서 빼서 y 좌표를 계산
+
+            img_label = Label(new_window, image=img_tk, text=label_name)
+            img_label.image = img_tk  # 이미지의 참조를 유지하기 위해 필요
+            img_label.place(x=position, y=y_position -20)  # 계산된 y 좌표를 사용
+
+            text_label = None
+            if label_name == 'CurrentMinPrice':
+                text_label_name = Label(new_window, text='현재 최저가')
+                text_label_name.place(x=position -18, y=380)
+                text_label = Label(new_window, text= '{:.1f}'.format(float(honing_material.CurrentMinPrice)))
+            elif label_name == 'RecentPrice':
+                text_label_name = Label(new_window, text='최근 거래가')
+                text_label_name.place(x=position -18, y=380)
+                text_label = Label(new_window, text= '{:.1f}'.format(float(honing_material.RecentPrice)))
+            elif label_name == 'YDayAvgPrice':
+                text_label_name = Label(new_window, text='전날 평균 거래가')
+                text_label_name.place(x=position -32, y=380)
+                text_label = Label(new_window, text= '{:.1f}'.format(float(honing_material.YDayAvgPrice)))
+
+            if honing_material.Name == '에스더의 기운':
+                text_label.place(x=position - 10, y=y_position - 40)
+            else:
+                text_label.place(x=position + 3, y=y_position - 40)
+
+    def Page2_Place_Button(self, honing_material, position_x, position_y):
+        if honing_material.Name == '명예의 파편':
+            correctShard = search_engine.honingMat_Info[search_engine.bestShardName]
+            button = Button(self.page2, text="상세정보",
+                            command=lambda: self.Page2_Listener_ShowItemStatus(correctShard))  #명파는 예외처리
+        else:
+            button = Button(self.page2, text="상세정보",
+                            command=lambda: self.Page2_Listener_ShowItemStatus(honing_material))
+        button.place(x=position_x + 50, y=position_y - 5)
+        self.HoningMat_Buttons[honing_material.Name] = button
+
+    def Page2_Button_Clear(self):
+        for matName, button in self.HoningMat_Buttons.items():
+            button.destroy()
+        self.HoningMat_Buttons = {}
+
+    def select_EquipmentType_Listbox(self, event):
+        self.Page2_Clear()
 
         if self.currentSelectedCharacterName.get() in ['선택안됨', '', None] :
             return
-
 
         index = self.equipment_listbox.curselection()[0]
         seltext = self.equipment_listbox.get(index)
@@ -318,6 +400,7 @@ class LostArk:
                 self.HoningMat_TextLabel_Esther.place(x=220+self.adjustX, y=170+self.adjustY)
                 self.HoningMat_TextLabel_Esther.config(text='X ' + str(estherStoneCount) + ' = ' + '{:.2f}'.format(
                     estherStoneCount * honingMat_Item.CurrentMinPrice) + '골드')
+                self.Page2_Place_Button(honingMat_Item, 170 + self.adjustX, 150 + self.adjustY)  # 버튼 설치
                 return
 
         elif '만렙' in mats:
@@ -329,12 +412,6 @@ class LostArk:
             self.HoningMat_TextLabel_Esther.place(x=220 + self.adjustX, y=170 + self.adjustY)
             self.HoningMat_TextLabel_Esther.config(text='계승하세요. 현재 단계 강화는 심한 돈낭비입니다.')
             return
-
-
-
-
-
-
 
 
         # 필수재료 이미지, 텍스트 출력 및 총 가격 계산
@@ -353,26 +430,31 @@ class LostArk:
                     self.HoningMat_TextLabel_HonorStone.place(x=225+self.adjustX, y=170+self.adjustY)
                     self.HoningMat_TextLabel_HonorStone.config(text='X ' + str(mats[key]) + ' = ' + '{:.2f}'.format(
                         mats[key] * honingMat_Item.CurrentMinPrice) + '골드')
+                    self.Page2_Place_Button(honingMat_Item, 170+self.adjustX, 150+self.adjustY)     #버튼 설치
                 elif '수호' in key:
                     self.HoningMat_Labels[key].place(x=170+self.adjustX, y=200+self.adjustY)
                     self.HoningMat_TextLabel_OffDefGem.place(x=220+self.adjustX, y=220+self.adjustY)
                     self.HoningMat_TextLabel_OffDefGem.config(text='X ' + str(mats[key]) + ' = ' + '{:.2f}'.format(
                         mats[key] * honingMat_Item.CurrentMinPrice) + '골드')
+                    self.Page2_Place_Button(honingMat_Item, 170 + self.adjustX, 200 + self.adjustY)  # 버튼 설치
                 elif '파괴' in key:
                     self.HoningMat_Labels[key].place(x=170+self.adjustX, y=200+self.adjustY)
                     self.HoningMat_TextLabel_OffDefGem.place(x=220+self.adjustX, y=220+self.adjustY)
                     self.HoningMat_TextLabel_OffDefGem.config(text='X ' + str(mats[key]) + ' = ' + '{:.2f}'.format(
                         mats[key] * honingMat_Item.CurrentMinPrice) + '골드')
+                    self.Page2_Place_Button(honingMat_Item, 170 + self.adjustX, 200 + self.adjustY)  # 버튼 설치
                 elif '오레하' in key:
                     self.HoningMat_Labels[key].place(x=170+self.adjustX, y=250+self.adjustY)
                     self.HoningMat_TextLabel_OrehaStone.place(x=220+self.adjustX, y=270+self.adjustY)
                     self.HoningMat_TextLabel_OrehaStone.config(text='X ' + str(mats[key]) + ' = ' + '{:.2f}'.format(
                         mats[key] * honingMat_Item.CurrentMinPrice) + '골드')
+                    self.Page2_Place_Button(honingMat_Item, 170 + self.adjustX, 250 + self.adjustY)  # 버튼 설치
                 elif '파편' in key:
                     self.HoningMat_Labels[key].place(x=170+self.adjustX, y=300+self.adjustY)
                     self.HoningMat_TextLabel_HonorShard.place(x=220+self.adjustX, y=320+self.adjustY)
                     self.HoningMat_TextLabel_HonorShard.config(text='X ' + str(mats[key]) + ' = ' + '{:.2f}'.format(
                         mats[key] * honingMat_Item.CurrentMinPrice) + '골드')
+                    self.Page2_Place_Button(honingMat_Item, 170 + self.adjustX, 300 + self.adjustY)  # 버튼 설치
                 matTotalPrice += mats[key] * honingMat_Item.CurrentMinPrice
 
         # 추가재료 이미지, 텍스트 출력 및 총 가격 계산
@@ -384,26 +466,31 @@ class LostArk:
                 self.BonusMat_TextLabel_Solar1.place(x=220 + self.adjustX + self.bonusDistanceX - 5, y=170 + self.adjustY)
                 self.BonusMat_TextLabel_Solar1.config(text='X ' + str(mats_bonus[key]) + ' = ' + '{:.2f}'.format(
                     mats_bonus[key] * bonusMat_Item.CurrentMinPrice) + '골드')
+                self.Page2_Place_Button(bonusMat_Item, 170 +self.adjustX+ self.bonusDistanceX, 150 + self.adjustY)  # 버튼 설치
             elif '축복' in key:
                 self.HoningMat_Labels[key].place(x=170+self.adjustX+self.bonusDistanceX, y=200+self.adjustY)
                 self.BonusMat_TextLabel_Solar2.place(x=220 + self.adjustX + self.bonusDistanceX - 5, y=220 + self.adjustY)
                 self.BonusMat_TextLabel_Solar2.config(text='X ' + str(mats_bonus[key]) + ' = ' + '{:.2f}'.format(
                     mats_bonus[key] * bonusMat_Item.CurrentMinPrice) + '골드')
+                self.Page2_Place_Button(bonusMat_Item, 170 + self.adjustX + self.bonusDistanceX, 200 + self.adjustY)  # 버튼 설치
             elif '가호' in key:
                 self.HoningMat_Labels[key].place(x=170 + self.bonusDistanceX, y=250+self.adjustY)
                 self.BonusMat_TextLabel_Solar3.place(x=220 + self.bonusDistanceX - 5, y=270 + self.adjustY)
                 self.BonusMat_TextLabel_Solar3.config(text='X ' + str(mats_bonus[key]) + ' = ' + '{:.2f}'.format(
                     mats_bonus[key] * bonusMat_Item.CurrentMinPrice) + '골드')
+                self.Page2_Place_Button(bonusMat_Item, 170 + self.adjustX + self.bonusDistanceX, 250 + self.adjustY)  # 버튼 설치
             elif '재봉술' in key:
                 self.HoningMat_Labels[key].place(x=170+self.adjustX+self.bonusDistanceX,y=300+self.adjustY)
                 self.BonusMat_TextLabel_Book.place(x=220 + self.adjustX + self.bonusDistanceX, y=320 + self.adjustY)
                 self.BonusMat_TextLabel_Book.config(text='X ' + str(mats_bonus[key]) + ' = ' + '{:.2f}'.format(
                     mats_bonus[key] * bonusMat_Item.CurrentMinPrice) + '골드')
+                self.Page2_Place_Button(bonusMat_Item, 170 + self.adjustX + self.bonusDistanceX, 300 + self.adjustY)  # 버튼 설치
             elif '야금술' in key:
                 self.HoningMat_Labels[key].place(x=170+self.adjustX+self.bonusDistanceX,y=300+self.adjustY)
                 self.BonusMat_TextLabel_Book.place(x=220 + self.adjustX + self.bonusDistanceX, y=320 + self.adjustY)
                 self.BonusMat_TextLabel_Book.config(text='X ' + str(mats_bonus[key]) + ' = ' + '{:.2f}'.format(
                     mats_bonus[key] * bonusMat_Item.CurrentMinPrice) + '골드')
+                self.Page2_Place_Button(bonusMat_Item, 170 + self.adjustX + self.bonusDistanceX, 300 + self.adjustY)  # 버튼 설치
 
             bonusMatTotalPrice += mats_bonus[key] * bonusMat_Item.CurrentMinPrice
 
@@ -417,14 +504,10 @@ class LostArk:
         self.BonusMat_TextLabel_TotalPrice.config(text='합계 : ' + str(bonusMatTotalPrice) + '골드')    #추가재료 합계 TextLabel
         self.BonusMat_TextLabel_TotalPrice.place(x=170 + +self.adjustX + self.bonusDistanceX, y=410 + self.adjustY)
 
-
-
-
     def HoningMat_Img_Ready(self):
         self.GoldImg = PhotoImage(file='Image/Gold48.png')
         self.GoldImgLabel = Label(self.page2, image=self.GoldImg)
         for name, item in search_engine.honingMat_Info.items():
-            test = item.Icon
             response = requests.get(item.Icon)
             img_data = response.content
             img = Image.open(BytesIO(img_data))

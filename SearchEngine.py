@@ -25,6 +25,7 @@ class SearchEngine:
         self.honingMat_Info = {}
         self.honingShard_Info = ''
         self.honingShard_Info2 = ''
+        self.bestShardName = ''
 
         response = requests.get(self.urls['market_option'], headers=self.headers)
         options = response.json()
@@ -223,10 +224,11 @@ class SearchEngine:
         currentMinPrice = best.CurrentMinPrice / bestRate
         item_obj = HoningMat(name, icon, yDayAvgPrice, recentPrice, currentMinPrice)
         self.honingMat_Info[name] = item_obj
-
         self.honingShard_Info2 = '* ' + '명예의 파편 주머니(대),(중),(소)의 가격은 ' + str(s.CurrentMinPrice) + ',' + str(m.CurrentMinPrice) + ',' + str(l.CurrentMinPrice) + ' 개당 가격은 '\
                                  +'{:.2f}'.format(largeVal) +',' +'{:.2f}'.format(middleVal) +',' +'{:.2f}'.format(smallVal)
         self.honingShard_Info1 = '* ' + best.Name + '의 기준으로 재련 가격을 측정'
+
+        self.bestShardName = best.Name
 
 
 
