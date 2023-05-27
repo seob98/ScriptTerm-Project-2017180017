@@ -14,6 +14,8 @@ class Character:
     def SetEquipment(self, itemType, itemName, enhanceLv, itemLv, imageURL, isEsther):
         if itemType == '무기':
             self.Equipments[itemType] = Equipment(itemName, True, enhanceLv, itemLv , imageURL)
+            if isEsther:
+                self.Equipments[itemType].Esther = True
         elif itemType in ['투구', '상의', '하의', '장갑', '어깨']:
             self.Equipments[itemType] = Equipment(itemName, False, enhanceLv, itemLv, imageURL)
 

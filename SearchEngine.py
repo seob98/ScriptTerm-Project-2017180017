@@ -23,6 +23,8 @@ class SearchEngine:
         self.categoriesCode = {}        #'장비 상자' : 10100 등이 저장되어 있다.
         self.raidTeam_Info = []         #캐릭터 이름, 아이템레벨, 이미지를 담고 있다.
         self.honingMat_Info = {}
+        self.honingShard_Info = ''
+        self.honingShard_Info2 = ''
 
         response = requests.get(self.urls['market_option'], headers=self.headers)
         options = response.json()
@@ -127,7 +129,12 @@ class SearchEngine:
                 yDayAvgPrice = i['YDayAvgPrice']
                 recentPrice = i['RecentPrice']
                 currentMinPrice = i['CurrentMinPrice']
+                if any(term in name for term in ['수호', '파괴']):
+                    yDayAvgPrice *= 0.1
+                    recentPrice *= 0.1
+                    currentMinPrice *= 0.1
                 item_obj = HoningMat(name, icon, yDayAvgPrice, recentPrice, currentMinPrice)
+
                 self.honingMat_Info[name] = item_obj
                 print(f"Added item: {item_obj.Name}, Icon: {item_obj.Icon}, Yesterday Average Price: {item_obj.YDayAvgPrice}, Recent Price: {item_obj.RecentPrice}, Current Min Price: {item_obj.CurrentMinPrice}")
         else:
@@ -166,11 +173,13 @@ class SearchEngine:
         self.SearchHoningItem('재련 추가 재료', 3, '재봉술 : 수선 숙련')
         self.SearchHoningItem('재련 추가 재료', 3, '재봉술 : 수선 특화')
                                         #책(무기)
-        self.SearchHoningItem('재련 추가 재료', 3, '재봉술 : 단조 기본')
-        self.SearchHoningItem('재련 추가 재료', 3, '재봉술 : 단조 응용')
-        self.SearchHoningItem('재련 추가 재료', 3, '재봉술 : 단조 심화')
-        self.SearchHoningItem('재련 추가 재료', 3, '재봉술 : 단조 숙련')
-        self.SearchHoningItem('재련 추가 재료', 3, '재봉술 : 단조 특화')
+        self.SearchHoningItem('재련 추가 재료', 3, '야금술 : 단조 기본')
+        self.SearchHoningItem('재련 추가 재료', 3, '야금술 : 단조 응용')
+        self.SearchHoningItem('재련 추가 재료', 3, '야금술 : 단조 심화')
+        self.SearchHoningItem('재련 추가 재료', 3, '야금술 : 단조 숙련')
+        self.SearchHoningItem('재련 추가 재료', 3, '야금술 : 단조 특화')
+                                        #에스더의 기운
+        self.SearchHoningItem('무기 진화 재료', 3, '에스더의 기운')
 
         self.Create_BestHonorShards()
 
@@ -185,27 +194,40 @@ class SearchEngine:
         m = self.honingMat_Info['명예의 파편 주머니(중)']
         l = self.honingMat_Info['명예의 파편 주머니(대)']
 
-        smallVal = s.CurrentMinPrice / 500
-        middleVal = m.CurrentMinPrice / 1000
-        largeVal = m.CurrentMinPrice / 1500
+        DivideRate ={}
+        DivideRate['small'] = 500
+        DivideRate['middle'] = 1000
+        DivideRate['large'] = 1500
+
+        smallVal = s.CurrentMinPrice / DivideRate['small']
+        middleVal = m.CurrentMinPrice / DivideRate['middle']
+        largeVal = l.CurrentMinPrice / DivideRate['large']
 
         bestVal = min(smallVal, middleVal, largeVal)
+        bestRate = 0
 
-        best = None
         if bestVal == smallVal:
             best = s
+            bestRate = DivideRate['small']
         elif bestVal == middleVal:
             best = m
+            bestRate = DivideRate['middle']
         elif bestVal == largeVal:
             best = l
+            bestRate = DivideRate['large']
 
         name = '명예의 파편'
         icon = best.Icon
-        yDayAvgPrice = best.YDayAvgPrice
-        recentPrice = best.RecentPrice
-        currentMinPrice = best.CurrentMinPrice
+        yDayAvgPrice = best.YDayAvgPrice / bestRate
+        recentPrice = best.RecentPrice / bestRate
+        currentMinPrice = best.CurrentMinPrice / bestRate
         item_obj = HoningMat(name, icon, yDayAvgPrice, recentPrice, currentMinPrice)
         self.honingMat_Info[name] = item_obj
+
+        self.honingShard_Info2 = '* ' + '명예의 파편 주머니(대),(중),(소)의 가격은 ' + str(s.CurrentMinPrice) + ',' + str(m.CurrentMinPrice) + ',' + str(l.CurrentMinPrice) + ' 개당 가격은 '\
+                                 +'{:.2f}'.format(largeVal) +',' +'{:.2f}'.format(middleVal) +',' +'{:.2f}'.format(smallVal)
+        self.honingShard_Info1 = '* ' + best.Name + '의 기준으로 재련 가격을 측정'
+
 
 
 

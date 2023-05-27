@@ -48,7 +48,10 @@ class Equipment:
 
     def GetRequiredMat(self):
         if self.Esther:
-            return {'에스더'}, {'에스더'}
+            mat = {}
+            bonus_mat = {}
+            mat['에스더'] = self.EnhanceLv
+            return mat, bonus_mat
 
         if self.IsWeapon:
             if self.ItemGrade == 1302:
@@ -176,6 +179,8 @@ class Equipment:
 
         if self.EnhanceLv in range(6,15):
             AdditionalHoingMat['재봉술 : 수선 응용'] = 1
+        if self.EnhanceLv in range(15,20):
+            AdditionalHoingMat['재봉술 : 수선 심화'] = 1
 
         return HoningMat, AdditionalHoingMat
 
@@ -242,7 +247,7 @@ class Equipment:
             AdditionalHoingMat['태양의 은총'] = 36
             AdditionalHoingMat['태양의 축복'] = 18
             AdditionalHoingMat['태양의 가호'] = 6
-        elif self.EnhanceLv >= 19:                      #                목표 : 20이상
+        elif self.EnhanceLv in range(19,25):            #                목표 : 20이상
             AdditionalHoingMat['태양의 은총'] = 48
             AdditionalHoingMat['태양의 축복'] = 24
             AdditionalHoingMat['태양의 가호'] = 8
@@ -362,10 +367,13 @@ class Equipment:
             AdditionalHoingMat['태양의 은총'] = 36
             AdditionalHoingMat['태양의 축복'] = 18
             AdditionalHoingMat['태양의 가호'] = 6
-        elif self.EnhanceLv >= 19:                      #             목표 : 20이상
+        elif self.EnhanceLv in range(19, 25):           #             목표 : 20이상
             AdditionalHoingMat['태양의 은총'] = 48
             AdditionalHoingMat['태양의 축복'] = 24
             AdditionalHoingMat['태양의 가호'] = 8
+        elif self.EnhanceLv == 25:
+            HoningMat['만렙'] = 1
+
 
         return HoningMat, AdditionalHoingMat
 
@@ -390,7 +398,7 @@ class Equipment:
         elif self.EnhanceLv >= 15:
             HoningMat['계승'] = 1
 
-        AdditionalHoingMat['재봉술 : 단조 기본'] = 1
+        AdditionalHoingMat['야금술 : 단조 기본'] = 1
         return HoningMat, AdditionalHoingMat
 
     def GetWeaponRequiredHoningMat_1340(self):
@@ -472,7 +480,9 @@ class Equipment:
             HoningMat['계승'] = 1
 
         if self.EnhanceLv in range(6,15):
-            AdditionalHoingMat['재봉술 : 단조 응용'] = 1
+            AdditionalHoingMat['야금술 : 단조 응용'] = 1
+        if self.EnhanceLv in range(15,20):
+            AdditionalHoingMat['야금술 : 단조 심화'] = 1
 
         return HoningMat, AdditionalHoingMat
 
@@ -539,15 +549,15 @@ class Equipment:
             AdditionalHoingMat['태양의 은총'] = 36
             AdditionalHoingMat['태양의 축복'] = 18
             AdditionalHoingMat['태양의 가호'] = 6
-        elif self.EnhanceLv >= 19:                      #                목표 : 20이상
+        elif self.EnhanceLv in range(19, 25):  # 목표 : 20이상
             AdditionalHoingMat['태양의 은총'] = 48
             AdditionalHoingMat['태양의 축복'] = 24
             AdditionalHoingMat['태양의 가호'] = 8
 
         if self.EnhanceLv in range(12, 15):             # 책              목표 : 13~15
-            AdditionalHoingMat['재봉술 : 단조 숙련'] = 1
+            AdditionalHoingMat['야금술 : 단조 숙련'] = 1
         elif self.EnhanceLv in range(15, 19):           #                 목표 : 16~19
-            AdditionalHoingMat['재봉술 : 단조 특화'] = 1
+            AdditionalHoingMat['야금술 : 단조 특화'] = 1
 
         return HoningMat, AdditionalHoingMat
 
@@ -659,9 +669,11 @@ class Equipment:
             AdditionalHoingMat['태양의 은총'] = 36
             AdditionalHoingMat['태양의 축복'] = 18
             AdditionalHoingMat['태양의 가호'] = 6
-        elif self.EnhanceLv >= 19:                      #             목표 : 20이상
+        elif self.EnhanceLv in range(19, 25):           #              목표 : 20이상
             AdditionalHoingMat['태양의 은총'] = 48
             AdditionalHoingMat['태양의 축복'] = 24
             AdditionalHoingMat['태양의 가호'] = 8
+        elif self.EnhanceLv == 25:
+            HoningMat['만렙'] = 1
 
         return HoningMat, AdditionalHoingMat

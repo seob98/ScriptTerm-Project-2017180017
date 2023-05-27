@@ -26,16 +26,42 @@ class LostArk:
         self.currentSelectedCharacterName.set('선택안됨')
         self.currentSelectedCharacterLV = 0
         self.characterSelectRaidoButtons = []
+
+        self.bonusDistanceX = 200       #재료-추가재료 이미지간 거리
+        self.adjustX = 0                #재련재료 현황 adjust값들
+        self.adjustY = 20
+
         self.characterNameLabel = None          #page2
         self.characterLvLabel = None            #page2
         self.equipment_listbox = None           #page2
         self.equipment_image = {}               #page2
         self.equipment_imageLabel = None        #page2
 
-        self.HoningMat_Labels = {}
-        #self.blankImg = {}                     #page2
-        #self.blankImgLabel = None              #page2
-        self.GoldImgLabel = None
+        self.HoningMat_TextLabel_Title = None           #page2
+        self.HoningMat_TextLabel_TotalPrice = None      #page2
+        self.HoningMat_TextLabel_HonorStone = None      #page2
+        self.HoningMat_TextLabel_OffDefGem = None       #page2
+        self.HoningMat_TextLabel_OrehaStone = None      #page2
+        self.HoningMat_TextLabel_HonorShard = None      #page2
+        self.HoningMat_TextLabel_Gold = None            #page2
+
+        self.BonusMat_TextLabel_Title = None          #page2
+        self.BonusMat_TextLabel_TotalPrice = None     #page2
+        self.BonusMat_TextLabel_Solar1 = None              #page2
+        self.BonusMat_TextLabel_Solar2 = None              #page2
+        self.BonusMat_TextLabel_Solar3 = None              #page2
+        self.BonusMat_TextLabel_Book = None                #page2
+        self.BonusMat_TextLabel_Gold = None                #page2
+
+        self.HoningShard_TextLabel_Guide1 = None
+        self.HoningShard_TextLabel_Guide2 = None
+        self.TextLabel_Guide = None
+
+        self.HoningMat_Images = {}              #page2
+        self.HoningMat_Labels = {}              #page2
+
+        self.GoldImgLabel = None                #page2
+        self.GoldImg = None                     #page2
 
         self.initPage2()
 
@@ -141,7 +167,7 @@ class LostArk:
     #page2
 
     def initPage2(self):
-        self.ItemLabel_Ready()
+        self.HoningMat_Img_Ready()
 
         self.characterNameLabel = Label(self.page2, text = '캐릭터 이름 : ' + self.currentSelectedCharacterName.get())       #라벨 : 캐릭터이름 (좌측상단)
         self.characterNameLabel.place(x=0, y=0)
@@ -159,17 +185,48 @@ class LostArk:
         self.equipment_listbox.place(x=0, y=40)  # Place the listbox right below the label
         self.equipment_listbox.bind('<<ListboxSelect>>', self.select_EquipmentType_Listbox)
 
-        #self.blankImg = PhotoImage(file='Image/Blank.png')
-        #self.blankImgLabel = Label(self.page2, image=self.blankImg)
-        #self.blankImgLabel.place(x=180,y=100)
-
         self.selectedItem_NameLabel = Label(self.page2, text = '')                  #라벨 : 아이템이름 (좌측)
-        self.selectedItem_NameLabel.place(x=240, y=65)
+        self.selectedItem_NameLabel.place(x=240 + self.adjustX, y=65)
 
         self.selectedItem_LvLabel = Label(self.page2, text='')                      #라벨 : 아이템레벨 (좌측)
-        self.selectedItem_LvLabel.place(x=240, y=85)
+        self.selectedItem_LvLabel.place(x=240 + self.adjustX, y=85)
+
+        self.HoningMat_TextLabel_HonorStone = Label(self.page2, text='')                    #재련재료 텍스트라벨
+        self.HoningMat_TextLabel_OffDefGem = Label(self.page2, text='')
+        self.HoningMat_TextLabel_OrehaStone = Label(self.page2, text='')
+        self.HoningMat_TextLabel_HonorShard = Label(self.page2, text='')
+        self.HoningMat_TextLabel_Gold = Label(self.page2, text='')
+        self.HoningMat_TextLabel_Title = Label(self.page2, text='재련 기본 재료')
+        self.HoningMat_TextLabel_TotalPrice = Label(self.page2, text='')
+
+        self.BonusMat_TextLabel_Title = Label(self.page2, text='')                    #추가재료 텍스트라벨
+        self.BonusMat_TextLabel_TotalPrice = Label(self.page2, text='')
+        self.BonusMat_TextLabel_Solar1 = Label(self.page2, text='')
+        self.BonusMat_TextLabel_Solar2 = Label(self.page2, text='')
+        self.BonusMat_TextLabel_Solar3 = Label(self.page2, text='')
+        self.BonusMat_TextLabel_Book = Label(self.page2, text='')
+
+        self.HoningMat_TextLabel_Esther = Label(self.page2, text='')
+        self.HoningMat_TextLabel_Esther.place(x=220 + self.adjustX, y=170 + self.adjustY)
+
+        #안내문 TextLabel
+        self.HoningShard_TextLabel_Guide1 =  Label(self.page2, text='')
+        self.HoningShard_TextLabel_Guide2 = Label(self.page2, text='')
+        self.TextLabel_Guide = Label(self.page2, text='')
+
+        self.HoningShard_TextLabel_Guide1.config(text=search_engine.honingShard_Info1)
+        self.HoningShard_TextLabel_Guide1.place(x=10, y=520)
+        self.HoningShard_TextLabel_Guide2.config(text=search_engine.honingShard_Info2)
+        self.HoningShard_TextLabel_Guide2.place(x=10, y=540)
+        self.TextLabel_Guide.config(text='* 모든 재료 가격은 현재 경매장 최저가가 기준')
+        self.TextLabel_Guide.place(x=10, y=500)
+
+        self.Esther_Image_Label = Label(self.page2, image=self.HoningMat_Images['에스더의 기운'])
+
+
 
     def Page2_Equipments_Image_Ready(self):
+        equipment_image = {}
         for character in search_engine.raidTeam_Info:  # 이미지 : 장비파츠(좌측중간상단부)
             equipments = character.Equipments
             for gear_name, gear in equipments.items():
@@ -181,52 +238,206 @@ class LostArk:
                     img = ImageTk.PhotoImage(img)
                     self.equipment_image[(character.CharacterName,gear_name)] = img
                     self.equipment_imageLabel = Label(self.page2)
-                    self.equipment_imageLabel.place(x=170,y=60)
+                    self.equipment_imageLabel.place(x=170 + self.adjustX,y=60)
 
     def select_EquipmentType_Listbox(self, event):
+        for matName, matLabel in self.HoningMat_Labels.items():
+            matLabel.config(image='')                   # 재료이미지
+
+        self.equipment_imageLabel.config( image='')     # 장비 아이콘
+        self.selectedItem_NameLabel.config(text='')     # 장비 이름
+        self.selectedItem_LvLabel.config(text='')       # 아이템레벨
+
+        self.GoldImgLabel.config(image='')
+        self.HoningMat_TextLabel_Title.config(text='')
+        self.HoningMat_TextLabel_TotalPrice.config(text='')
+        self.HoningMat_TextLabel_HonorStone.config(text='')
+        self.HoningMat_TextLabel_OffDefGem.config(text='')
+        self.HoningMat_TextLabel_OrehaStone.config(text='')
+        self.HoningMat_TextLabel_HonorShard.config(text='')
+        self.HoningMat_TextLabel_Gold.config(text='')
+        self.HoningMat_TextLabel_Esther.config(text='')
+
+        self.BonusMat_TextLabel_Title.config(text='')
+        self.BonusMat_TextLabel_Solar1.config(text='')
+        self.BonusMat_TextLabel_Solar2.config(text='')
+        self.BonusMat_TextLabel_Solar3.config(text='')
+        self.BonusMat_TextLabel_Book.config(text='')
+        self.BonusMat_TextLabel_TotalPrice.config(text='')
+        self.Esther_Image_Label.config(image='')                          #초기화
+
+
+        for matName, matImageLabel in self.HoningMat_Labels.items():
+            matImageLabel.config(image='')
+
         if self.currentSelectedCharacterName.get() in ['선택안됨', '', None] :
             return
+
+
         index = self.equipment_listbox.curselection()[0]
         seltext = self.equipment_listbox.get(index)
         selectedCharacter = search_engine.GetCharacter(self.currentSelectedCharacterName.get())
         gear = selectedCharacter.Equipments[seltext]
-        self.equipment_imageLabel.config(image=self.equipment_image[self.currentSelectedCharacterName.get(), seltext])
+        self.equipment_imageLabel.config(image=self.equipment_image[self.currentSelectedCharacterName.get(), seltext])  #장비 아이콘 ImageLabel
 
-        self.selectedItem_NameLabel.config(text=gear.Name)
-        self.selectedItem_LvLabel.config(text='장비 레벨 : ' + str(gear.ItemLv))
+        self.selectedItem_NameLabel.config(text=gear.Name)                                  #장비 이름 TextLabel
+        self.selectedItem_LvLabel.config(text='장비 레벨 : ' + str(gear.ItemLv))             #장비 아이템레벨 TextLabel
 
+        matTotalPrice = 0
+        bonusMatTotalPrice = 0
         mats, mats_bonus = gear.GetRequiredMat()
 
+        #예외: 에스더 / 만렙 / 계승
+        if '에스더' in mats:
+            estherStoneCount=0
+            estherLV = mats['에스더']
+            if estherLV == 0:
+                estherStoneCount = 1
+            elif estherLV == 1:
+                estherStoneCount = 2
+            elif estherLV == 2:
+                estherStoneCount = 5
+            elif estherLV == 3:
+                estherStoneCount = 10
+            elif estherLV == 4:
+                estherStoneCount = 10
+            elif estherLV == 5:
+                estherStoneCount = 20
+            elif estherLV == 6:
+                estherStoneCount = 20
+            elif estherLV == 7:
+                estherStoneCount = 30
+
+            if estherLV == 8:
+                self.HoningMat_TextLabel_Esther.config(text='8강 사장님은 가격보고 강화하는 사람들이 아닙니다')
+                return
+            else:
+                honingMat_Item = search_engine.honingMat_Info['에스더의 기운']  # 재료 객체
+                self.Esther_Image_Label.config(image=self.HoningMat_Images['에스더의 기운'])
+                self.Esther_Image_Label.place(x=170+self.adjustX, y=150+self.adjustY)
+                self.HoningMat_TextLabel_Esther.place(x=220+self.adjustX, y=170+self.adjustY)
+                self.HoningMat_TextLabel_Esther.config(text='X ' + str(estherStoneCount) + ' = ' + '{:.2f}'.format(
+                    estherStoneCount * honingMat_Item.CurrentMinPrice) + '골드')
+                return
+
+        elif '만렙' in mats:
+            self.HoningMat_TextLabel_Esther.place(x=220 + self.adjustX, y=170 + self.adjustY)
+            self.HoningMat_TextLabel_Esther.config(text='풀강입니다.')
+            return
+
+        elif '계승' in mats:
+            self.HoningMat_TextLabel_Esther.place(x=220 + self.adjustX, y=170 + self.adjustY)
+            self.HoningMat_TextLabel_Esther.config(text='계승하세요. 현재 단계 강화는 심한 돈낭비입니다.')
+            return
+
+
+
+
+
+
+
+
+        # 필수재료 이미지, 텍스트 출력 및 총 가격 계산
         for key, basicMat in mats.items():
             if '골드' in key:
-                continue
-            elif '돌파석' in key:
-                self.HoningMat_Labels[key].place(x=250,y=150)
-            elif '수호' in key:
-                self.HoningMat_Labels[key].place(x=250, y=200)
-            elif '파괴' in key:
-                self.HoningMat_Labels[key].place(x=250, y=200)
-            elif '오레하' in key:
-                self.HoningMat_Labels[key].place(x=250,y=250)
-            elif '파편' in key:
-                self.HoningMat_Labels[key].place(x=250,y=300)
+                self.GoldImgLabel.config(image=self.GoldImg)
+                self.GoldImgLabel.place(x=170+self.adjustX,y=350+self.adjustY)
+                self.HoningMat_TextLabel_Gold.place(x=220 + self.adjustX, y=370 + self.adjustY)
+                self.HoningMat_TextLabel_Gold.config(text='X ' + str(mats['골드']) + ' = ' + '{:.2f}'.format(mats['골드']) + '골드')
+                matTotalPrice += mats['골드']
+            else:
+                honingMat_Item = search_engine.honingMat_Info[key]  # 재료 객체
+                self.HoningMat_Labels[key].config(image=self.HoningMat_Images[key])
+                if '돌파석' in key:
+                    self.HoningMat_Labels[key].place(x=170+self.adjustX, y=150+self.adjustY)
+                    self.HoningMat_TextLabel_HonorStone.place(x=225+self.adjustX, y=170+self.adjustY)
+                    self.HoningMat_TextLabel_HonorStone.config(text='X ' + str(mats[key]) + ' = ' + '{:.2f}'.format(
+                        mats[key] * honingMat_Item.CurrentMinPrice) + '골드')
+                elif '수호' in key:
+                    self.HoningMat_Labels[key].place(x=170+self.adjustX, y=200+self.adjustY)
+                    self.HoningMat_TextLabel_OffDefGem.place(x=220+self.adjustX, y=220+self.adjustY)
+                    self.HoningMat_TextLabel_OffDefGem.config(text='X ' + str(mats[key]) + ' = ' + '{:.2f}'.format(
+                        mats[key] * honingMat_Item.CurrentMinPrice) + '골드')
+                elif '파괴' in key:
+                    self.HoningMat_Labels[key].place(x=170+self.adjustX, y=200+self.adjustY)
+                    self.HoningMat_TextLabel_OffDefGem.place(x=220+self.adjustX, y=220+self.adjustY)
+                    self.HoningMat_TextLabel_OffDefGem.config(text='X ' + str(mats[key]) + ' = ' + '{:.2f}'.format(
+                        mats[key] * honingMat_Item.CurrentMinPrice) + '골드')
+                elif '오레하' in key:
+                    self.HoningMat_Labels[key].place(x=170+self.adjustX, y=250+self.adjustY)
+                    self.HoningMat_TextLabel_OrehaStone.place(x=220+self.adjustX, y=270+self.adjustY)
+                    self.HoningMat_TextLabel_OrehaStone.config(text='X ' + str(mats[key]) + ' = ' + '{:.2f}'.format(
+                        mats[key] * honingMat_Item.CurrentMinPrice) + '골드')
+                elif '파편' in key:
+                    self.HoningMat_Labels[key].place(x=170+self.adjustX, y=300+self.adjustY)
+                    self.HoningMat_TextLabel_HonorShard.place(x=220+self.adjustX, y=320+self.adjustY)
+                    self.HoningMat_TextLabel_HonorShard.config(text='X ' + str(mats[key]) + ' = ' + '{:.2f}'.format(
+                        mats[key] * honingMat_Item.CurrentMinPrice) + '골드')
+                matTotalPrice += mats[key] * honingMat_Item.CurrentMinPrice
 
-        self.GoldImgLabel.place(x= 200,y =180)
+        # 추가재료 이미지, 텍스트 출력 및 총 가격 계산
+        for key, bonusMat in mats_bonus.items():
+            bonusMat_Item = search_engine.honingMat_Info[key]  # 재료 객체
+            self.HoningMat_Labels[key].config(image=self.HoningMat_Images[key])
+            if '은총' in key:
+                self.HoningMat_Labels[key].place(x=170 +self.adjustX+ self.bonusDistanceX, y=150 + self.adjustY)
+                self.BonusMat_TextLabel_Solar1.place(x=220 + self.adjustX + self.bonusDistanceX - 5, y=170 + self.adjustY)
+                self.BonusMat_TextLabel_Solar1.config(text='X ' + str(mats_bonus[key]) + ' = ' + '{:.2f}'.format(
+                    mats_bonus[key] * bonusMat_Item.CurrentMinPrice) + '골드')
+            elif '축복' in key:
+                self.HoningMat_Labels[key].place(x=170+self.adjustX+self.bonusDistanceX, y=200+self.adjustY)
+                self.BonusMat_TextLabel_Solar2.place(x=220 + self.adjustX + self.bonusDistanceX - 5, y=220 + self.adjustY)
+                self.BonusMat_TextLabel_Solar2.config(text='X ' + str(mats_bonus[key]) + ' = ' + '{:.2f}'.format(
+                    mats_bonus[key] * bonusMat_Item.CurrentMinPrice) + '골드')
+            elif '가호' in key:
+                self.HoningMat_Labels[key].place(x=170 + self.bonusDistanceX, y=250+self.adjustY)
+                self.BonusMat_TextLabel_Solar3.place(x=220 + self.bonusDistanceX - 5, y=270 + self.adjustY)
+                self.BonusMat_TextLabel_Solar3.config(text='X ' + str(mats_bonus[key]) + ' = ' + '{:.2f}'.format(
+                    mats_bonus[key] * bonusMat_Item.CurrentMinPrice) + '골드')
+            elif '재봉술' in key:
+                self.HoningMat_Labels[key].place(x=170+self.adjustX+self.bonusDistanceX,y=300+self.adjustY)
+                self.BonusMat_TextLabel_Book.place(x=220 + self.adjustX + self.bonusDistanceX, y=320 + self.adjustY)
+                self.BonusMat_TextLabel_Book.config(text='X ' + str(mats_bonus[key]) + ' = ' + '{:.2f}'.format(
+                    mats_bonus[key] * bonusMat_Item.CurrentMinPrice) + '골드')
+            elif '야금술' in key:
+                self.HoningMat_Labels[key].place(x=170+self.adjustX+self.bonusDistanceX,y=300+self.adjustY)
+                self.BonusMat_TextLabel_Book.place(x=220 + self.adjustX + self.bonusDistanceX, y=320 + self.adjustY)
+                self.BonusMat_TextLabel_Book.config(text='X ' + str(mats_bonus[key]) + ' = ' + '{:.2f}'.format(
+                    mats_bonus[key] * bonusMat_Item.CurrentMinPrice) + '골드')
 
-    def ItemLabel_Ready(self):
-        p = PhotoImage(file='Image/Gold3.png')
-        self.GoldImgLabel = Label(self.page2, image=p)
-        self.images = []  # 가비지 셀렉션에 이미지가 포함되는 문제를 방지해야한다.
+            bonusMatTotalPrice += mats_bonus[key] * bonusMat_Item.CurrentMinPrice
+
+        self.HoningMat_TextLabel_Title.config(text='필수 재료')                                        #필수재료 TextLabel
+        self.HoningMat_TextLabel_Title.place(x=170+self.adjustX, y=120+self.adjustY)
+        self.HoningMat_TextLabel_TotalPrice.config(text='합계 : ' + str(matTotalPrice) + '골드')        #필수재료 합계 TextLabel
+        self.HoningMat_TextLabel_TotalPrice.place(x=170+self.adjustX, y=410 + self.adjustY)
+
+        self.BonusMat_TextLabel_Title.config(text='추가 재료')                                          #추가재료 TextLabel
+        self.BonusMat_TextLabel_Title.place(x=170 + self.adjustX + self.bonusDistanceX, y=120 + self.adjustY)
+        self.BonusMat_TextLabel_TotalPrice.config(text='합계 : ' + str(bonusMatTotalPrice) + '골드')    #추가재료 합계 TextLabel
+        self.BonusMat_TextLabel_TotalPrice.place(x=170 + +self.adjustX + self.bonusDistanceX, y=410 + self.adjustY)
+
+
+
+
+    def HoningMat_Img_Ready(self):
+        self.GoldImg = PhotoImage(file='Image/Gold48.png')
+        self.GoldImgLabel = Label(self.page2, image=self.GoldImg)
         for name, item in search_engine.honingMat_Info.items():
             test = item.Icon
             response = requests.get(item.Icon)
             img_data = response.content
             img = Image.open(BytesIO(img_data))
-            img = img.resize((32, 32))
+            img = img.resize((48, 48))
             photo = ImageTk.PhotoImage(img)
-            self.images.append(photo)
-            gear_label = Label(self.page2, image=photo)
-            self.HoningMat_Labels[item.Name] = gear_label
+            self.HoningMat_Images[item.Name] = photo
+
+        for matName, matImg in self.HoningMat_Images.items():
+            label = Label(self.page2, image='')
+            self.HoningMat_Labels[matName] = label
+
+
+
 
 
 LostArk()
