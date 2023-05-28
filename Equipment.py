@@ -62,6 +62,8 @@ class Equipment:
                 return self.GetWeaponRequiredHoningMat_1390()
             elif self.ItemGrade == 1525:
                 return self.GetWeaponRequiredHoningMat_1525()
+            else:
+                return {'저렙' : 1},{}
         else:
             if self.ItemGrade == 1302:
                 return self.GetArmorRequiredHoningMat_1302()
@@ -71,6 +73,8 @@ class Equipment:
                 return self.GetArmorRequiredHoningMat_1390()
             elif self.ItemGrade == 1525:
                 return self.GetArmorRequiredHoningMat_1525()
+            else:
+                return {'저렙' : 1},{}
 
         return None, None
 

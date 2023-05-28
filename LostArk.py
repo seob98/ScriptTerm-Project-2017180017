@@ -293,8 +293,21 @@ class LostArk:
         name_label = Label(new_window, text=honing_material.Name)
         name_label.pack()                       #재료 이름 이미지 하단에 출력
 
+        prices = [honing_material.CurrentMinPrice, honing_material.RecentPrice, honing_material.YDayAvgPrice]      #가격 그래프 높이 구하기
+        min_height = 150
+        max_height = 250
+        min_price = min(prices)
+        max_price = max(prices)
+        normalized_heights = []
+        for price in prices:
+            if max_price == min_price:
+                normalized_price = 0.5  # 모든 가격이 동일하다면 0.5 (중간 값)을 설정합니다.
+            else:
+                normalized_price = (price - min_price) / (max_price - min_price)  # 가격 데이터를 0과 1 사이로 정규화합니다.
+            height = min_height + normalized_price * (max_height - min_height)  # 정규화된 가격을 높이 범위로 스케일링합니다.
+            normalized_heights.append(height)
 
-        images_sizes = [(30, 200), (30, 250), (30, 150)]
+        images_sizes = [(30, int(normalized_heights[0])), (30, int(normalized_heights[1])), (30,  int(normalized_heights[2]))]
         image_path = 'Image/Graph.png'
         image_type = ['CurrentMinPrice','RecentPrice','YDayAvgPrice']
         image_tks = {}
@@ -319,20 +332,20 @@ class LostArk:
             if label_name == 'CurrentMinPrice':
                 text_label_name = Label(new_window, text='현재 최저가')
                 text_label_name.place(x=position -18, y=380)
-                text_label = Label(new_window, text= '{:.1f}'.format(float(honing_material.CurrentMinPrice)))
+                text_label = Label(new_window, text= '{:.2f}'.format(float(honing_material.CurrentMinPrice)))
             elif label_name == 'RecentPrice':
                 text_label_name = Label(new_window, text='최근 거래가')
                 text_label_name.place(x=position -18, y=380)
-                text_label = Label(new_window, text= '{:.1f}'.format(float(honing_material.RecentPrice)))
+                text_label = Label(new_window, text= '{:.2f}'.format(float(honing_material.RecentPrice)))
             elif label_name == 'YDayAvgPrice':
                 text_label_name = Label(new_window, text='전날 평균 거래가')
                 text_label_name.place(x=position -32, y=380)
-                text_label = Label(new_window, text= '{:.1f}'.format(float(honing_material.YDayAvgPrice)))
+                text_label = Label(new_window, text= '{:.2f}'.format(float(honing_material.YDayAvgPrice)))
 
             if honing_material.Name == '에스더의 기운':
-                text_label.place(x=position - 10, y=y_position - 40)
+                text_label.place(x=position - 14, y=y_position - 40)
             else:
-                text_label.place(x=position + 3, y=y_position - 40)
+                text_label.place(x=position - 2, y=y_position - 40)
 
     def Page2_Place_Button(self, honing_material, position_x, position_y):
         if honing_material.Name == '명예의 파편':
@@ -411,6 +424,11 @@ class LostArk:
         elif '계승' in mats:
             self.HoningMat_TextLabel_Esther.place(x=220 + self.adjustX, y=170 + self.adjustY)
             self.HoningMat_TextLabel_Esther.config(text='계승하세요. 현재 단계 강화는 심한 돈낭비입니다.')
+            return
+
+        elif '저렙' in mats:
+            self.HoningMat_TextLabel_Esther.place(x=220 + self.adjustX, y=170 + self.adjustY)
+            self.HoningMat_TextLabel_Esther.config(text='계산이 무의미합니다. 장비계승을 문제없이 하셨다면 최소 1302장비 +6강입니다.')
             return
 
 
