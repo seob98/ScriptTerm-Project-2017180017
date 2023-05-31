@@ -75,6 +75,15 @@ class LostArk:
 
         self.SendMessage_Button = None          #page2
 
+        # page3
+        self.bosses = {'루드릭' : ['아르테미스'], '소금 거인': ['유디아'], '로블롬' : ['루테란 서부'], '윌리윌리' : ['루테란 동부'], '혼재의 추오' : ['애니츠'] ,'시그나투스' : ['아르데타인'],
+                       '프록시마' : ['베른 북부'], '타르실라' : ['슈사이어'], '하르마게돈' : ['로헨델'], '티파니' : ['욘'], '엔켈라두스' : ['페이튼'], '모아케' : ['파푸니카'],
+                       '천둥날개': ['베른 남부'], '헤르무트' : ['로웬'] ,'이스라펠' : ['엘가시아'] ,'드라커스' : ['볼다이크']}
+
+        self.map_info = {'아르테미스' : (641,574), '유디아' : (707,551), '루테란 서부' : (752,568), '루테란 동부' : (805,535), '애니츠' : (1039,355), '아르데타인' : (985,204),
+                         '베른 북부' : (735,289), '슈사이어' : (780,76), '로헨델' : (331,359),'욘' : (200,625), '페이튼' : (276,197), '파푸니카' : (400,555),
+                         '베른 남부' : (629,326), '로웬' : (612,65),'엘가시아' : (0,0), '볼다이크' : (303,685), }
+
         self.checkboxs = {}
         self.exclude_materials = {}             #귀속 처리
 
@@ -386,7 +395,7 @@ class LostArk:
 
     def Page2_Place_Msg_Button(self, gear, mats, mats_bonus, character):
         button = Button(self.page2, text="메시지 전송", command=lambda: self.Page2_Listener_Msg_Button(gear, mats, mats_bonus, character))
-        button.place(x=750,y=500)
+        button.place(x=600,y=500)
 
     def Page2_Button_Clear(self):
         for matName, button in self.HoningMat_Buttons.items():
@@ -701,26 +710,35 @@ class LostArk:
             label = Label(self.page2, image='')
             self.HoningMat_Labels[matName] = label
 
+#page3
+
     def show_boss_map(self):
         new_window = Toplevel(self.window)
         new_window.title('필드 보스 맵 : ')
         new_window.geometry('600x400')  # 새로운 윈도우창 초기화
 
     def select_boss_listbox(self, event=None):
-        print('hi')
+        selected_boss = self.boss_listbox.get(self.boss_listbox.curselection())  # 보스 이름
+        location = self.bosses[selected_boss]  # 해당 보스의 위치
+        map_coords = self.map_info[location[0]]  # 맵 좌표 정보
+
+        new_x = min(max(map_coords[0]- self.canvas_width / 2, 0), self.cavas_width_limit)
+        new_y = min(max(map_coords[1]- self.canvas_height / 2, 0), self.cavas_height_limit)
+
+        self.map_canvas.coords(self.image_id, -new_x, -new_y)
 
     def initPage3(self):
         self.canvas_width = 650                     #캔버스 크기 설정
         self.canvas_height = 500
 
-        canvas = Canvas(self.page3, bg="white", width=self.canvas_width, height=self.canvas_height)
-        self.map_image = Image.open('Image/testmap.png')
+        self.map_canvas = Canvas(self.page3, bg="white", width=self.canvas_width, height=self.canvas_height)
+        self.map_image = Image.open('Image/map.png')
 
         self.map_width = self.map_image.width       #맵 크기 설정
         self.map_height = self.map_image.height
 
-        canvas.map_label = ImageTk.PhotoImage(self.map_image)
-        self.image_id = canvas.create_image(-self.map_width/2, -self.map_height/2, image=canvas.map_label, anchor='nw')
+        self.map_canvas.map_label = ImageTk.PhotoImage(self.map_image)
+        self.image_id = self.map_canvas.create_image(-self.map_width/2, 0, image=self.map_canvas.map_label, anchor='nw')
 
         self.cavas_width_limit = self.map_width - self.canvas_width
         self.cavas_height_limit = self.map_height - self.canvas_height
@@ -729,37 +747,40 @@ class LostArk:
             self.start_x = event.x
             self.start_y = event.y
 
+            click_x = event.x - self.map_canvas.coords(self.image_id)[0]
+            click_y = event.y - self.map_canvas.coords(self.image_id)[1]
+            print("이미지 내부에서의 클릭 위치: ", click_x, click_y)
+
         def move_move(event):
             dx = event.x - self.start_x
             dy = event.y - self.start_y
 
-            x1, y1, x2, y2 = canvas.bbox(self.image_id)
+            x1, y1, x2, y2 = self.map_canvas.bbox(self.image_id)
 
             if x1 + dx < 0 and x2 + dx > self.canvas_width:
-                canvas.move(self.image_id, dx, 0)
+                self.map_canvas.move(self.image_id, dx, 0)
 
             if y1 + dy < 0 and y2 + dy > self.canvas_height:
-                canvas.move(self.image_id, 0, dy)
+                self.map_canvas.move(self.image_id, 0, dy)
 
             self.start_x = event.x
             self.start_y = event.y
 
-        canvas.bind("<ButtonPress-1>", move_start)
-        canvas.bind("<B1-Motion>", move_move)
+        self.map_canvas.bind("<ButtonPress-1>", move_start)
+        self.map_canvas.bind("<B1-Motion>", move_move)
 
-        canvas.place(x=800 - self.canvas_width - 15, y=20)
+        self.map_canvas.place(x=800 - self.canvas_width - 15, y=20)
 
         self.boss_map_button = Button(self.page3, text="상세정보", command=lambda: self.show_boss_map())
         self.boss_map_button.place(x=515,y=535)
 
-        location_boss = {'애니츠' : '혼재의 추오', '아르데타인' :'시그나투스', '베른' : '프록시마', '슈사이어' : '타르실라', '로헨델' : '하르마게돈',
-                  '욘': '티파니', '페이튼' : '엔켈라두스', '파푸니카' : '모아케', '로웬' : '헤르무트', '엘가시아' : '이스라펠', '볼다이크' : '드라커스'}
-        bosses = ['혼재의 추오','시그나투스', '프록시마', '타르실라', '하르마게돈', '티파니', '엔켈라두스', '모아케', '헤르무트','이스라펠','드라커스']
+        boss_names = list(self.bosses.keys())  # 보스 이름 목록 가져오기
+        boss_names_var = StringVar(value=boss_names)  # 보스 이름을 사용하여 StringVar 인스턴스 생성
 
-        self.boss_listbox = Listbox(self.page3, height=len(bosses), width=10,
-                                         listvariable=StringVar(value=bosses),
-                                         bd=2, relief='sunken')
-        self.boss_listbox.place(x=0, y=0)  # Place the listbox right below the label
+        self.boss_listbox = Listbox(self.page3, height=len(self.bosses), width=10,
+                                    listvariable=boss_names_var,  # 보스 이름을 사용하여 리스트박스 채우기
+                                    bd=2, relief='sunken')
+        self.boss_listbox.place(x=25, y=25)  # Place the listbox right below the label
         self.boss_listbox.bind('<<ListboxSelect>>', self.select_boss_listbox)
 
 
