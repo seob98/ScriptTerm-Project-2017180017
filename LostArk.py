@@ -9,14 +9,13 @@ import spam     # C++
 
 from Equipment import *
 from HoningMat import *
-
-
 from SearchEngine import *
 from Character import *
 from ChatBot import *
 
-
-
+#image coord
+start_x = None
+start_y = None
 
 class LostArk:
     def __init__(self):
@@ -80,7 +79,10 @@ class LostArk:
         self.exclude_materials = {}             #귀속 처리
 
         self.initPage2()
+        self.initPage3()
 
+        self.map_image = None
+        self.map_label = None
         self.window.mainloop()
 
     #page1
@@ -699,8 +701,35 @@ class LostArk:
             label = Label(self.page2, image='')
             self.HoningMat_Labels[matName] = label
 
+    def initPage3(self):
+        canvas = Canvas(self.page3, bg="white", width=800, height=600)
+
+        self.map_image = Image.open('Image/testmap.png')
+        self.map_width = self.map_image.width
+        self.map_height = self.map_image.height
+        canvas.map_label = ImageTk.PhotoImage(self.map_image)
+
+        self.image_id = canvas.create_image(0, 0, image=canvas.map_label, anchor='nw')
+
+        def move_start(event):
+            canvas.scan_mark(event.x, event.y)
+
+        def move_move(event):
+            canvas.scan_dragto(event.x, event.y, gain=1)
+            canvas.coords(self.image_id, event.x, event.y)
+
+            # Get image current position
+            x1, y1, x2, y2 = canvas.bbox(self.image_id)
+            print('x1 = ', x1, ', ', end='')
+            print('y1 = ', y1, ', ', end='')
+            print('x2 = ', x2, ', ', end='')
+            print('y2 = ', y2, ', ')
+
+        canvas.bind("<ButtonPress-1>", move_start)
+        canvas.bind("<B1-Motion>", move_move)
+
+        canvas.pack()
 
 
-
-
-LostArk()
+if __name__ == '__main__':
+    LostArk().window.mainloop()
