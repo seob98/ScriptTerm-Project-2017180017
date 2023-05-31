@@ -3,7 +3,9 @@ from tkinter import font, PhotoImage, Toplevel, Label, Tk
 import tkinter.ttk
 from PIL import Image,ImageTk
 from io import BytesIO
-import spam
+from telegram import Bot
+
+import spam     # C++
 
 from Equipment import *
 from HoningMat import *
@@ -11,11 +13,16 @@ from HoningMat import *
 
 from SearchEngine import *
 from Character import *
+from ChatBot import *
 
-search_engine = SearchEngine()
+
+
 
 class LostArk:
     def __init__(self):
+        self.search_engine = SearchEngine()
+        self.chat_bot = ChatBot(self.search_engine)
+
         self.window = Tk()
         self.window.title('HoningCalc')
         self.window.geometry('830x600')
@@ -67,10 +74,10 @@ class LostArk:
 
         self.HoningMat_Buttons = {}             #page2
 
+        self.SendMessage_Button = None          #page2
+
         self.checkboxs = {}
-        self.exclude_materials = {} #돌파석
-
-
+        self.exclude_materials = {}             #귀속 처리
 
         self.initPage2()
 
@@ -121,7 +128,7 @@ class LostArk:
             radio_button.destroy()
         self.characterSelectRaidoButtons = []                   # reset the list
 
-        for i, character in enumerate(search_engine.raidTeam_Info):
+        for i, character in enumerate(self.search_engine.raidTeam_Info):
             image_url = character.Image
             if image_url is not None:
                 response = requests.get(image_url)
@@ -158,8 +165,8 @@ class LostArk:
 
     def search_raidTeam(self):
         characterName = self.entry.get()
-        search_engine.SearchRaidTeam(characterName)
-        search_engine.AddCharacterImage()
+        self.search_engine.SearchRaidTeam(characterName)
+        self.search_engine.AddCharacterImage()
         self.DisplayRaidTeam()
         self.Page2_Equipments_Image_Ready()
 
@@ -223,9 +230,9 @@ class LostArk:
         self.HoningShard_TextLabel_Guide2 = Label(self.page2, text='')
         self.TextLabel_Guide = Label(self.page2, text='')
 
-        self.HoningShard_TextLabel_Guide1.config(text=search_engine.honingShard_Info1)
+        self.HoningShard_TextLabel_Guide1.config(text=self.search_engine.honingShard_Info1)
         self.HoningShard_TextLabel_Guide1.place(x=10, y=520)
-        self.HoningShard_TextLabel_Guide2.config(text=search_engine.honingShard_Info2)
+        self.HoningShard_TextLabel_Guide2.config(text=self.search_engine.honingShard_Info2)
         self.HoningShard_TextLabel_Guide2.place(x=10, y=540)
         self.TextLabel_Guide.config(text='* 모든 재료 가격은 현재 경매장 최저가가 기준')
         self.TextLabel_Guide.place(x=10, y=500)
@@ -237,7 +244,7 @@ class LostArk:
 
     def Page2_Equipments_Image_Ready(self):
         equipment_image = {}
-        for character in search_engine.raidTeam_Info:  # 이미지 : 장비파츠(좌측중간상단부)
+        for character in self.search_engine.raidTeam_Info:  # 이미지 : 장비파츠(좌측중간상단부)
             equipments = character.Equipments
             for gear_name, gear in equipments.items():
                 if gear.ImageURL is not None:
@@ -361,10 +368,9 @@ class LostArk:
             elif priceLen >= 6:
                 text_label.place(x=position - 14, y=y_position - 40)
 
-
     def Page2_Place_Button(self, honing_material, position_x, position_y):
         if honing_material.Name == '명예의 파편':
-            correctShard = search_engine.honingMat_Info[search_engine.bestShardName]
+            correctShard = self.search_engine.honingMat_Info[self.search_engine.bestShardName]
             button = Button(self.page2, text="상세정보",
                             command=lambda: self.Page2_Listener_ShowItemStatus(correctShard))  #명파는 예외처리
         else:
@@ -373,10 +379,21 @@ class LostArk:
         button.place(x=position_x + 50, y=position_y - 5)
         self.HoningMat_Buttons[honing_material.Name] = button
 
+    def Page2_Listener_Msg_Button(self, gear, mats, mats_bonus, character):
+        self.chat_bot.send_message_sync(gear, mats, mats_bonus, character, self.exclude_materials)
+
+    def Page2_Place_Msg_Button(self, gear, mats, mats_bonus, character):
+        button = Button(self.page2, text="메시지 전송", command=lambda: self.Page2_Listener_Msg_Button(gear, mats, mats_bonus, character))
+        button.place(x=750,y=500)
+
     def Page2_Button_Clear(self):
         for matName, button in self.HoningMat_Buttons.items():
             button.destroy()
         self.HoningMat_Buttons = {}
+
+        if self.SendMessage_Button != None:
+            self.SendMessage_Button.destroy()
+            self.SendMessage_Button = None
 
     def select_EquipmentType_Listbox(self, event=None):
         self.Page2_Clear()
@@ -386,7 +403,7 @@ class LostArk:
 
         index = self.equipment_listbox.curselection()[0]
         seltext = self.equipment_listbox.get(index)
-        selectedCharacter = search_engine.GetCharacter(self.currentSelectedCharacterName.get())
+        selectedCharacter = self.search_engine.GetCharacter(self.currentSelectedCharacterName.get())
         gear = selectedCharacter.Equipments[seltext]
         self.equipment_imageLabel.config(image=self.equipment_image[self.currentSelectedCharacterName.get(), seltext])  #장비 아이콘 ImageLabel
 
@@ -396,6 +413,7 @@ class LostArk:
         matTotalPrice = 0
         bonusMatTotalPrice = 0
         mats, mats_bonus = gear.GetRequiredMat()
+        self.Page2_Place_Msg_Button(gear, mats, mats_bonus, selectedCharacter)
 
         #예외: 에스더 / 만렙 / 계승
         if '에스더' in mats:
@@ -422,7 +440,7 @@ class LostArk:
                 self.HoningMat_TextLabel_Esther.config(text='8강 사장님은 가격보고 강화하는 사람들이 아닙니다')
                 return
             else:
-                honingMat_Item = search_engine.honingMat_Info['에스더의 기운']  # 재료 객체
+                honingMat_Item = self.search_engine.honingMat_Info['에스더의 기운']  # 재료 객체
                 self.Esther_Image_Label.config(image=self.HoningMat_Images['에스더의 기운'])
                 self.Esther_Image_Label.place(x=170+self.adjustX, y=150+self.adjustY)
                 self.HoningMat_TextLabel_Esther.place(x=220+self.adjustX, y=170+self.adjustY)
@@ -456,7 +474,7 @@ class LostArk:
                 self.HoningMat_TextLabel_Gold.config(text='X ' + str(mats['골드']) + ' = ' + '{:.2f}'.format(mats['골드']) + '골드')
                 matTotalPrice += mats['골드']
             else:
-                honingMat_Item = search_engine.honingMat_Info[key]  # 재료 객체
+                honingMat_Item = self.search_engine.honingMat_Info[key]  # 재료 객체
                 self.HoningMat_Labels[key].config(image=self.HoningMat_Images[key])
                 if '돌파석' in key:
                     self.HoningMat_Labels[key].place(x=170+self.adjustX, y=150+self.adjustY)
@@ -497,7 +515,7 @@ class LostArk:
 
         # 추가재료 이미지, 텍스트 출력 및 총 가격 계산
         for key, bonusMat in mats_bonus.items():
-            bonusMat_Item = search_engine.honingMat_Info[key]  # 재료 객체
+            bonusMat_Item = self.search_engine.honingMat_Info[key]  # 재료 객체
             self.HoningMat_Labels[key].config(image=self.HoningMat_Images[key])
             if '은총' in key:
                 self.HoningMat_Labels[key].place(x=170 +self.adjustX+ self.bonusDistanceX, y=150 + self.adjustY)
@@ -559,14 +577,13 @@ class LostArk:
                                             command=self.Page2_Listener_Checkbox_SealMat)
         self.checkboxs[item_name].place(x=position_x-20, y=position_y+10)
 
-
     def Page2_Listener_Checkbox_SealMat(self):
         if self.currentSelectedCharacterName.get() in ['선택안됨', '', None]:
             return
 
         index = self.equipment_listbox.curselection()[0]
         seltext = self.equipment_listbox.get(index)
-        selectedCharacter = search_engine.GetCharacter(self.currentSelectedCharacterName.get())
+        selectedCharacter = self.search_engine.GetCharacter(self.currentSelectedCharacterName.get())
         gear = selectedCharacter.Equipments[seltext]
         self.equipment_imageLabel.config(
             image=self.equipment_image[self.currentSelectedCharacterName.get(), seltext])  # 장비 아이콘 ImageLabel
@@ -595,7 +612,7 @@ class LostArk:
         for key, basicMat in mats.items():
             if key == '골드':
                 continue
-            honingMat_Item = search_engine.honingMat_Info[key]  # 재료 객체
+            honingMat_Item = self.search_engine.honingMat_Info[key]  # 재료 객체
             self.HoningMat_Labels[key].config(image=self.HoningMat_Images[key])
             minPrice = honingMat_Item.CurrentMinPrice
             if '돌파석' in key:
@@ -630,7 +647,7 @@ class LostArk:
 
         # 추가재료 이미지, 텍스트 출력 및 총 가격 계산
         for key, bonusMat in mats_bonus.items():
-            bonusMat_Item = search_engine.honingMat_Info[key]  # 재료 객체
+            bonusMat_Item = self.search_engine.honingMat_Info[key]  # 재료 객체
             self.HoningMat_Labels[key].config(image=self.HoningMat_Images[key])
             minPrice2 = bonusMat_Item.CurrentMinPrice
             if '은총' in key:
@@ -670,7 +687,7 @@ class LostArk:
     def HoningMat_Img_Ready(self):
         self.GoldImg = PhotoImage(file='Image/Gold48.png')
         self.GoldImgLabel = Label(self.page2, image=self.GoldImg)
-        for name, item in search_engine.honingMat_Info.items():
+        for name, item in self.search_engine.honingMat_Info.items():
             response = requests.get(item.Icon)
             img_data = response.content
             img = Image.open(BytesIO(img_data))
