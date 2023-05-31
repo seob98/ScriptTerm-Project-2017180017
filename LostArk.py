@@ -701,34 +701,66 @@ class LostArk:
             label = Label(self.page2, image='')
             self.HoningMat_Labels[matName] = label
 
+    def show_boss_map(self):
+        new_window = Toplevel(self.window)
+        new_window.title('필드 보스 맵 : ')
+        new_window.geometry('600x400')  # 새로운 윈도우창 초기화
+
+    def select_boss_listbox(self, event=None):
+        print('hi')
+
     def initPage3(self):
-        canvas = Canvas(self.page3, bg="white", width=800, height=600)
+        self.canvas_width = 650                     #캔버스 크기 설정
+        self.canvas_height = 500
 
+        canvas = Canvas(self.page3, bg="white", width=self.canvas_width, height=self.canvas_height)
         self.map_image = Image.open('Image/testmap.png')
-        self.map_width = self.map_image.width
-        self.map_height = self.map_image.height
-        canvas.map_label = ImageTk.PhotoImage(self.map_image)
 
-        self.image_id = canvas.create_image(0, 0, image=canvas.map_label, anchor='nw')
+        self.map_width = self.map_image.width       #맵 크기 설정
+        self.map_height = self.map_image.height
+
+        canvas.map_label = ImageTk.PhotoImage(self.map_image)
+        self.image_id = canvas.create_image(-self.map_width/2, -self.map_height/2, image=canvas.map_label, anchor='nw')
+
+        self.cavas_width_limit = self.map_width - self.canvas_width
+        self.cavas_height_limit = self.map_height - self.canvas_height
 
         def move_start(event):
-            canvas.scan_mark(event.x, event.y)
+            self.start_x = event.x
+            self.start_y = event.y
 
         def move_move(event):
-            canvas.scan_dragto(event.x, event.y, gain=1)
-            canvas.coords(self.image_id, event.x, event.y)
+            dx = event.x - self.start_x
+            dy = event.y - self.start_y
 
-            # Get image current position
             x1, y1, x2, y2 = canvas.bbox(self.image_id)
-            print('x1 = ', x1, ', ', end='')
-            print('y1 = ', y1, ', ', end='')
-            print('x2 = ', x2, ', ', end='')
-            print('y2 = ', y2, ', ')
+
+            if x1 + dx < 0 and x2 + dx > self.canvas_width:
+                canvas.move(self.image_id, dx, 0)
+
+            if y1 + dy < 0 and y2 + dy > self.canvas_height:
+                canvas.move(self.image_id, 0, dy)
+
+            self.start_x = event.x
+            self.start_y = event.y
 
         canvas.bind("<ButtonPress-1>", move_start)
         canvas.bind("<B1-Motion>", move_move)
 
-        canvas.pack()
+        canvas.place(x=800 - self.canvas_width - 15, y=20)
+
+        self.boss_map_button = Button(self.page3, text="상세정보", command=lambda: self.show_boss_map())
+        self.boss_map_button.place(x=515,y=535)
+
+        location_boss = {'애니츠' : '혼재의 추오', '아르데타인' :'시그나투스', '베른' : '프록시마', '슈사이어' : '타르실라', '로헨델' : '하르마게돈',
+                  '욘': '티파니', '페이튼' : '엔켈라두스', '파푸니카' : '모아케', '로웬' : '헤르무트', '엘가시아' : '이스라펠', '볼다이크' : '드라커스'}
+        bosses = ['혼재의 추오','시그나투스', '프록시마', '타르실라', '하르마게돈', '티파니', '엔켈라두스', '모아케', '헤르무트','이스라펠','드라커스']
+
+        self.boss_listbox = Listbox(self.page3, height=len(bosses), width=10,
+                                         listvariable=StringVar(value=bosses),
+                                         bd=2, relief='sunken')
+        self.boss_listbox.place(x=0, y=0)  # Place the listbox right below the label
+        self.boss_listbox.bind('<<ListboxSelect>>', self.select_boss_listbox)
 
 
 if __name__ == '__main__':
