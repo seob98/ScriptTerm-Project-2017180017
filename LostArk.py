@@ -3,7 +3,7 @@ from tkinter import font, PhotoImage, Toplevel, Label, Tk
 import tkinter.ttk
 from PIL import Image,ImageTk
 from io import BytesIO
-
+import spam
 
 from Equipment import *
 from HoningMat import *
@@ -349,10 +349,18 @@ class LostArk:
                 text_label_name.place(x=position -32, y=380)
                 text_label = Label(new_window, text= '{:.2f}'.format(float(honing_material.YDayAvgPrice)))
 
-            if honing_material.Name == '에스더의 기운':
-                text_label.place(x=position - 14, y=y_position - 40)
-            else:
+            priceText = '{:.2f}'.format(float(honing_material.CurrentMinPrice))
+            priceLen = spam.strlen(priceText)
+
+            if priceLen <= 3:
+                text_label.place(x=position, y=y_position - 40)
+            if priceLen == 4:
+                text_label.place(x=position + 1, y=y_position - 40)
+            elif priceLen == 5:
                 text_label.place(x=position - 2, y=y_position - 40)
+            elif priceLen >= 6:
+                text_label.place(x=position - 14, y=y_position - 40)
+
 
     def Page2_Place_Button(self, honing_material, position_x, position_y):
         if honing_material.Name == '명예의 파편':
@@ -503,6 +511,7 @@ class LostArk:
                 self.BonusMat_TextLabel_Solar2.place(x=220 + self.adjustX + self.bonusDistanceX - 5, y=220 + self.adjustY)
                 self.BonusMat_TextLabel_Solar2.config(text='X ' + str(mats_bonus[key]) + ' = ' + '{:.2f}'.format(
                     mats_bonus[key] * bonusMat_Item.CurrentMinPrice) + '골드')
+                self.Page2_Place_Button(bonusMat_Item, 170 + self.adjustX + self.bonusDistanceX, 200 + self.adjustY)  # 버튼 설치
                 self.Page2_CheckBoxSet('축복', 170 +self.adjustX+ self.bonusDistanceX, 200 + self.adjustY)  # 체크박스 설치(재료값제외)
             elif '가호' in key:
                 self.HoningMat_Labels[key].place(x=170 + self.bonusDistanceX, y=250+self.adjustY)
