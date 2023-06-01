@@ -712,10 +712,25 @@ class LostArk:
 
 #page3
 
-    def show_boss_map(self):
+    def show_boss_map(self, map_name):
+        title_name = {'아르테미스' : '국경지대', '유디아' : '살란드 구룽지', '루테란 서부' : '빌브린 숲', '루테란 동부' : '해무리 언덕', '애니츠' : '황혼의 연무', '아르데타인' : '토트리치',
+                         '베른 북부' : '베르닐 삼림', '슈사이어' : '머무른 시간의 호수', '로헨델' : '파괴된 제나일','욘' : '무쇠망치 작업장', '페이튼' : '붉은 달의 흔적', '파푸니카' : '티카티카 군락지',
+                         '베른 남부' : '칸다리아 영지', '로웬' : '레갸르방크 대평원','엘가시아' : '필레니소스 산', '볼다이크' : '대우림', }
+
         new_window = Toplevel(self.window)
-        new_window.title('필드 보스 맵 : ')
-        new_window.geometry('600x400')  # 새로운 윈도우창 초기화
+        new_window.title(title_name[map_name])
+
+
+
+        self.map_image = PhotoImage(file='Image/'+ map_name +'.png')
+
+        width = self.map_image.width()
+        height = self.map_image.height()
+        self.map_image_label = Label(new_window, image=self.map_image)
+        self.map_image_label.place(x=0,y=0)
+
+        new_window.geometry(str(width)+'x'+str(height))
+
 
     def select_boss_listbox(self, event=None):
         selected_boss = self.boss_listbox.get(self.boss_listbox.curselection())  # 보스 이름
@@ -751,6 +766,12 @@ class LostArk:
             click_y = event.y - self.map_canvas.coords(self.image_id)[1]
             print("이미지 내부에서의 클릭 위치: ", click_x, click_y)
 
+            icon_size = 45
+            for map_name, map_area in self.map_info.items():
+                if click_x > map_area[0] and click_x < map_area[0] + icon_size and  \
+                    click_y > map_area[1] and click_y  < map_area[1] + icon_size:
+                    self.show_boss_map(map_name)
+
         def move_move(event):
             dx = event.x - self.start_x
             dy = event.y - self.start_y
@@ -770,9 +791,6 @@ class LostArk:
         self.map_canvas.bind("<B1-Motion>", move_move)
 
         self.map_canvas.place(x=800 - self.canvas_width - 15, y=20)
-
-        self.boss_map_button = Button(self.page3, text="상세정보", command=lambda: self.show_boss_map())
-        self.boss_map_button.place(x=515,y=535)
 
         boss_names = list(self.bosses.keys())  # 보스 이름 목록 가져오기
         boss_names_var = StringVar(value=boss_names)  # 보스 이름을 사용하여 StringVar 인스턴스 생성
