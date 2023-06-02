@@ -1,6 +1,0 @@
-Character
-ChatBot
-Equipment
-HoningMat
-LostArk
-SearchEngine

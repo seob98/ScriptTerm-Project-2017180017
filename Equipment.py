@@ -20,6 +20,8 @@ class Equipment:
     Equip_1390 = {}
     for i in range(1, 21):
         Equip_1390[i] = 1390 + i * 10
+    for i in range(21, 26):
+        Equip_1390[i] = 1590 + (i - 20) * 5
 
     Equip_1525 = {}
     for i in range(1, 26):

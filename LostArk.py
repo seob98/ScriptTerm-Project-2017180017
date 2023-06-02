@@ -92,7 +92,7 @@ class LostArk:
 
         self.map_image = None
         self.map_label = None
-        self.window.mainloop()
+        #self.window.mainloop()
 
     #page1
 
@@ -250,6 +250,10 @@ class LostArk:
 
         self.Esther_Image_Label = Label(self.page2, image=self.HoningMat_Images['에스더의 기운'])
 
+        self.IceCreamImg = PhotoImage(file='Image/아이스크림2.png')
+        self.IceCreamImgLabel = Label(self.page2, image=self.IceCreamImg)
+        self.IceCreamImgLabel.place(x=10000, y=150)
+
     def checkbox_click(self):
         self.select_EquipmentType_Listbox()
 
@@ -293,6 +297,7 @@ class LostArk:
         self.BonusMat_TextLabel_Book.config(text='')
         self.BonusMat_TextLabel_TotalPrice.config(text='')
         self.Esther_Image_Label.config(image='')
+        self.IceCreamImgLabel.config(image='')
 
         for matName, matImageLabel in self.HoningMat_Labels.items():        #재료 이미지라벨 연결 해제
             matImageLabel.config(image='')
@@ -448,7 +453,10 @@ class LostArk:
                 estherStoneCount = 30
 
             if estherLV == 8:
-                self.HoningMat_TextLabel_Esther.config(text='8강 사장님은 가격보고 강화하는 사람들이 아닙니다')
+                self.HoningMat_TextLabel_Esther.config(text='')
+                self.IceCreamImg = PhotoImage(file='Image/아이스크림2.png')
+                self.IceCreamImgLabel = Label(self.page2, image=self.IceCreamImg)
+                self.IceCreamImgLabel.place(x=250, y=150)
                 return
             else:
                 honingMat_Item = self.search_engine.honingMat_Info['에스더의 기운']  # 재료 객체
@@ -472,7 +480,7 @@ class LostArk:
 
         elif '저렙' in mats:
             self.HoningMat_TextLabel_Esther.place(x=220 + self.adjustX, y=170 + self.adjustY)
-            self.HoningMat_TextLabel_Esther.config(text='계산이 무의미합니다. 장비계승을 문제없이 하셨다면 최소 1302장비 +6강입니다.')
+            self.HoningMat_TextLabel_Esther.config(text='아이템 레벨이 너무 낮습니다.\n스토리 익스프레스/하이퍼 익스프레스 진행 후 1304를 레벨을 장착하고 메시지를 호출해주세요.')
             return
 
 
@@ -803,4 +811,5 @@ class LostArk:
 
 
 if __name__ == '__main__':
-    LostArk().window.mainloop()
+    app = LostArk()
+    app.window.mainloop()
